@@ -67,8 +67,6 @@ img { display: block; max-width: 100%; }
 
 .type-showcase {
   --showcase-gap: clamp(18px, 1.5vw, 30px);
-  --showcase-half-gap: clamp(9px, .75vw, 15px);
-  --showcase-duration: 115s;
   position: relative;
   width: 100%;
   padding: clamp(18px, 2vw, 38px) 0 clamp(116px, 11vw, 184px);
@@ -76,20 +74,18 @@ img { display: block; max-width: 100%; }
 .type-showcase__viewport {
   width: 100%;
   overflow: hidden;
+  cursor: grab;
+  touch-action: pan-y;
+  user-select: none;
   -webkit-mask-image: linear-gradient(to right, transparent 0, #000 clamp(28px, 5vw, 100px), #000 calc(100% - clamp(28px, 5vw, 100px)), transparent 100%);
   mask-image: linear-gradient(to right, transparent 0, #000 clamp(28px, 5vw, 100px), #000 calc(100% - clamp(28px, 5vw, 100px)), transparent 100%);
 }
+.type-showcase.is-dragging .type-showcase__viewport { cursor: grabbing; }
 .type-showcase__track {
   display: flex;
   width: max-content;
   gap: var(--showcase-gap);
   will-change: transform;
-}
-.type-showcase__track.is-ready {
-  animation: type-showcase-scroll var(--showcase-duration) linear infinite;
-}
-.type-showcase.is-paused .type-showcase__track {
-  animation-play-state: paused;
 }
 .type-showcase__group {
   display: flex;
@@ -138,11 +134,6 @@ img { display: block; max-width: 100%; }
 .type-showcase__play { display: none; transform: translateX(1px); }
 .type-showcase.is-paused .type-showcase__pause { display: none; }
 .type-showcase.is-paused .type-showcase__play { display: block; }
-
-@keyframes type-showcase-scroll {
-  from { transform: translate3d(calc(-50% - var(--showcase-half-gap)), 0, 0); }
-  to { transform: translate3d(0, 0, 0); }
-}
 
 .projects { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: start; }
 .project-card,
@@ -893,7 +884,7 @@ html.reveal-enabled .scroll-reveal-item.is-revealed {
   .work-intro { padding-top: 0; }
   .intro-layout { padding-top: 42px; padding-bottom: 62px; }
   .intro-layout h1 { font-size: clamp(21px, 5.2vw, 42px); }
-  .type-showcase { --showcase-duration: 76s; padding-top: 16px; padding-bottom: 96px; }
+  .type-showcase { padding-top: 16px; padding-bottom: 96px; }
   .type-showcase__item { height: 48vw; }
   .type-showcase__toggle { right: 20px; }
   .projects { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
@@ -1121,7 +1112,7 @@ html.reveal-enabled .scroll-reveal-item.is-revealed {
   .client-marquee__track { animation: none; }
   .client-marquee__strip[aria-hidden="true"] { display: none; }
   .type-showcase__viewport { overflow-x: auto; -webkit-mask-image: none; mask-image: none; }
-  .type-showcase__track.is-ready { animation: none; transform: none; will-change: auto; }
+  .type-showcase__track { transform: none !important; will-change: auto; }
   .type-showcase__group[aria-hidden="true"] { display: none; }
   .type-showcase__toggle { display: none; }
 }

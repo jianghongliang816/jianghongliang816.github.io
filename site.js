@@ -64,6 +64,7 @@
   let typeShowcaseVideos = [];
   let typeShowcasePaused = false;
   let renderTypeShowcaseState = () => {};
+  let syncTypeShowcaseMotionPreference = () => {};
   const revealCards = [...document.querySelectorAll('.project-card')];
   const detailRevealItems = [
     ...document.querySelectorAll('.project-copy-board, .project-media-item, .project-copy, .about-profile'),
@@ -77,6 +78,7 @@
   let revealGroups = new Map();
 
   if (typeShowcase && typeShowcaseTrack && typeShowcaseGroup) {
+    const typeShowcaseViewport = typeShowcase.querySelector('.type-showcase__viewport');
     const clonedGroup = typeShowcaseGroup.cloneNode(true);
     clonedGroup.removeAttribute('data-type-showcase-group');
     clonedGroup.setAttribute('aria-hidden', 'true');
@@ -84,6 +86,62 @@
     clonedGroup.querySelectorAll('video').forEach((video) => video.setAttribute('aria-hidden', 'true'));
     typeShowcaseTrack.append(clonedGroup);
     typeShowcaseVideos = [...typeShowcase.querySelectorAll('video')];
+
+    let showcaseSegmentWidth = 0;
+    let showcaseOffset = 0;
+    let showcaseImpulse = 0;
+    let showcaseLastFrameTime = performance.now();
+    let showcasePointerId;
+    let showcasePointerX = 0;
+    let showcasePointerTime = 0;
+    let showcaseDragging = false;
+    let showcaseHovered = false;
+    let showcaseFocused = false;
+
+    const clampShowcaseSpeed = (speed) => Math.max(-1200, Math.min(1200, speed));
+    const getShowcaseBaseSpeed = () => window.innerWidth <= 900 ? 58 : 74;
+
+    const normalizeShowcaseOffset = () => {
+      if (!showcaseSegmentWidth) return;
+      while (showcaseOffset >= 0) showcaseOffset -= showcaseSegmentWidth;
+      while (showcaseOffset < -showcaseSegmentWidth) showcaseOffset += showcaseSegmentWidth;
+    };
+
+    const paintShowcase = () => {
+      if (reducedMotion.matches) {
+        typeShowcaseTrack.style.removeProperty('transform');
+        return;
+      }
+      typeShowcaseTrack.style.transform = `translate3d(${showcaseOffset}px, 0, 0)`;
+    };
+
+    const measureShowcase = () => {
+      const gap = Number.parseFloat(getComputedStyle(typeShowcaseTrack).columnGap) || 0;
+      const nextSegmentWidth = typeShowcaseGroup.getBoundingClientRect().width + gap;
+      if (!nextSegmentWidth) return;
+      if (!showcaseSegmentWidth) showcaseOffset = -nextSegmentWidth;
+      showcaseSegmentWidth = nextSegmentWidth;
+      normalizeShowcaseOffset();
+      paintShowcase();
+    };
+
+    const animateShowcase = (now) => {
+      const elapsed = Math.min(Math.max((now - showcaseLastFrameTime) / 1000, 0), .05);
+      showcaseLastFrameTime = now;
+
+      if (!reducedMotion.matches && !typeShowcasePaused && !document.hidden && !showcaseDragging) {
+        const isSlowed = showcaseHovered || showcaseFocused;
+        const baseSpeed = isSlowed ? 6 : getShowcaseBaseSpeed();
+        if (isSlowed) showcaseImpulse *= Math.exp(-elapsed * 10);
+        else showcaseImpulse *= Math.exp(-elapsed * 3.2);
+        if (Math.abs(showcaseImpulse) < .35) showcaseImpulse = 0;
+        showcaseOffset += (baseSpeed + (isSlowed ? 0 : showcaseImpulse)) * elapsed;
+        normalizeShowcaseOffset();
+        paintShowcase();
+      }
+
+      requestAnimationFrame(animateShowcase);
+    };
 
     const showcaseVideoObserver = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
@@ -109,16 +167,86 @@
       typeShowcasePaused = !typeShowcasePaused;
       renderTypeShowcaseState();
     });
-    const setShowcasePlaybackRate = (rate) => {
-      const marqueeAnimation = typeShowcaseTrack.getAnimations()[0];
-      if (!marqueeAnimation) return;
-      if (typeof marqueeAnimation.updatePlaybackRate === 'function') marqueeAnimation.updatePlaybackRate(rate);
-      else marqueeAnimation.playbackRate = rate;
+
+    typeShowcase.addEventListener('pointerover', (event) => {
+      if (event.target.closest('.type-showcase__item')) showcaseHovered = true;
+    });
+    typeShowcase.addEventListener('pointerout', (event) => {
+      if (!event.relatedTarget?.closest?.('.type-showcase__item')) showcaseHovered = false;
+    });
+    typeShowcase.addEventListener('focusin', (event) => {
+      if (event.target.closest('.type-showcase__item')) showcaseFocused = true;
+    });
+    typeShowcase.addEventListener('focusout', (event) => {
+      if (!typeShowcase.contains(event.relatedTarget)) showcaseFocused = false;
+    });
+
+    const finishShowcaseDrag = (event) => {
+      if (!showcaseDragging || event.pointerId !== showcasePointerId) return;
+      showcaseDragging = false;
+      showcasePointerId = undefined;
+      typeShowcase.classList.remove('is-dragging');
+      if (typeShowcaseViewport?.hasPointerCapture(event.pointerId)) {
+        typeShowcaseViewport.releasePointerCapture(event.pointerId);
+      }
     };
-    typeShowcase.addEventListener('mouseenter', () => setShowcasePlaybackRate(.42));
-    typeShowcase.addEventListener('mouseleave', () => setShowcasePlaybackRate(1));
+
+    typeShowcaseViewport?.addEventListener('pointerdown', (event) => {
+      if (event.target.closest('button') || (event.pointerType === 'mouse' && event.button !== 0)) return;
+      showcaseDragging = true;
+      showcasePointerId = event.pointerId;
+      showcasePointerX = event.clientX;
+      showcasePointerTime = performance.now();
+      showcaseImpulse = 0;
+      typeShowcase.classList.add('is-dragging');
+      typeShowcaseViewport.setPointerCapture(event.pointerId);
+    });
+    typeShowcaseViewport?.addEventListener('pointermove', (event) => {
+      if (!showcaseDragging || event.pointerId !== showcasePointerId || reducedMotion.matches) return;
+      const now = performance.now();
+      const elapsed = Math.max(now - showcasePointerTime, 8);
+      const delta = event.clientX - showcasePointerX;
+      showcaseOffset += delta;
+      showcaseImpulse = clampShowcaseSpeed((delta / elapsed) * 1000);
+      showcasePointerX = event.clientX;
+      showcasePointerTime = now;
+      normalizeShowcaseOffset();
+      paintShowcase();
+      event.preventDefault();
+    });
+    typeShowcaseViewport?.addEventListener('pointerup', finishShowcaseDrag);
+    typeShowcaseViewport?.addEventListener('pointercancel', finishShowcaseDrag);
+
+    typeShowcaseViewport?.addEventListener('wheel', (event) => {
+      if (reducedMotion.matches || typeShowcasePaused) return;
+      const horizontalGesture = Math.abs(event.deltaX) > Math.abs(event.deltaY);
+      if (horizontalGesture) {
+        event.preventDefault();
+        const delta = -event.deltaX;
+        showcaseOffset += delta;
+        showcaseImpulse = clampShowcaseSpeed(showcaseImpulse + delta * 7);
+        normalizeShowcaseOffset();
+        paintShowcase();
+      } else if (event.deltaY > 0) {
+        showcaseImpulse = clampShowcaseSpeed(showcaseImpulse + Math.min(event.deltaY * 2.4, 420));
+      }
+    }, { passive: false });
+
+    const showcaseResizeObserver = typeof ResizeObserver === 'function' ? new ResizeObserver(measureShowcase) : null;
+    showcaseResizeObserver?.observe(typeShowcaseGroup);
+    if (!showcaseResizeObserver) window.addEventListener('resize', measureShowcase, { passive: true });
+
+    syncTypeShowcaseMotionPreference = () => {
+      showcaseLastFrameTime = performance.now();
+      showcaseImpulse = 0;
+      if (reducedMotion.matches) typeShowcaseTrack.style.removeProperty('transform');
+      else measureShowcase();
+    };
     document.addEventListener('visibilitychange', renderTypeShowcaseState);
-    requestAnimationFrame(() => typeShowcaseTrack.classList.add('is-ready'));
+    requestAnimationFrame(() => {
+      measureShowcase();
+      requestAnimationFrame(animateShowcase);
+    });
   }
 
   const updateRevealScrollDirection = () => {
@@ -309,6 +437,7 @@
     motionPaused = event.matches;
     renderMotionState();
     renderTypeShowcaseState();
+    syncTypeShowcaseMotionPreference();
     setScrollReveal(event.matches);
   });
   window.addEventListener('resize', () => {
