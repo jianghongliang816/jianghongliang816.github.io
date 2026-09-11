@@ -56,6 +56,14 @@
   const motionToggle = document.querySelector('[data-motion-toggle]');
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   let motionPaused = reducedMotion.matches;
+  const typeShowcase = document.querySelector('[data-type-showcase]');
+  const typeShowcaseTrack = typeShowcase?.querySelector('[data-type-showcase-track]');
+  const typeShowcaseGroup = typeShowcase?.querySelector('[data-type-showcase-group]');
+  const typeShowcaseToggle = typeShowcase?.querySelector('[data-type-showcase-toggle]');
+  const visibleShowcaseVideos = new Set();
+  let typeShowcaseVideos = [];
+  let typeShowcasePaused = false;
+  let renderTypeShowcaseState = () => {};
   const revealCards = [...document.querySelectorAll('.project-card')];
   const detailRevealItems = [
     ...document.querySelectorAll('.project-copy-board, .project-media-item, .project-copy, .about-profile'),
@@ -67,6 +75,51 @@
   let lastRevealScrollY = window.scrollY;
   let revealResetFrame;
   let revealGroups = new Map();
+
+  if (typeShowcase && typeShowcaseTrack && typeShowcaseGroup) {
+    const clonedGroup = typeShowcaseGroup.cloneNode(true);
+    clonedGroup.removeAttribute('data-type-showcase-group');
+    clonedGroup.setAttribute('aria-hidden', 'true');
+    clonedGroup.querySelectorAll('img').forEach((image) => image.setAttribute('alt', ''));
+    clonedGroup.querySelectorAll('video').forEach((video) => video.setAttribute('aria-hidden', 'true'));
+    typeShowcaseTrack.append(clonedGroup);
+    typeShowcaseVideos = [...typeShowcase.querySelectorAll('video')];
+
+    const showcaseVideoObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) visibleShowcaseVideos.add(entry.target);
+        else visibleShowcaseVideos.delete(entry.target);
+      });
+      renderTypeShowcaseState();
+    }, { rootMargin: '120px' });
+
+    renderTypeShowcaseState = () => {
+      const paused = typeShowcasePaused || reducedMotion.matches || document.hidden;
+      typeShowcase.classList.toggle('is-paused', typeShowcasePaused);
+      typeShowcaseToggle?.setAttribute('aria-pressed', String(typeShowcasePaused));
+      typeShowcaseToggle?.setAttribute('aria-label', typeShowcasePaused ? '播放文字设计作品轮播' : '暂停文字设计作品轮播');
+      typeShowcaseVideos.forEach((video) => {
+        if (!paused && visibleShowcaseVideos.has(video)) video.play().catch(() => {});
+        else video.pause();
+      });
+    };
+
+    typeShowcaseVideos.forEach((video) => showcaseVideoObserver.observe(video));
+    typeShowcaseToggle?.addEventListener('click', () => {
+      typeShowcasePaused = !typeShowcasePaused;
+      renderTypeShowcaseState();
+    });
+    const setShowcasePlaybackRate = (rate) => {
+      const marqueeAnimation = typeShowcaseTrack.getAnimations()[0];
+      if (!marqueeAnimation) return;
+      if (typeof marqueeAnimation.updatePlaybackRate === 'function') marqueeAnimation.updatePlaybackRate(rate);
+      else marqueeAnimation.playbackRate = rate;
+    };
+    typeShowcase.addEventListener('mouseenter', () => setShowcasePlaybackRate(.42));
+    typeShowcase.addEventListener('mouseleave', () => setShowcasePlaybackRate(1));
+    document.addEventListener('visibilitychange', renderTypeShowcaseState);
+    requestAnimationFrame(() => typeShowcaseTrack.classList.add('is-ready'));
+  }
 
   const updateRevealScrollDirection = () => {
     const currentScrollY = window.scrollY;
@@ -255,6 +308,7 @@
   reducedMotion.addEventListener?.('change', (event) => {
     motionPaused = event.matches;
     renderMotionState();
+    renderTypeShowcaseState();
     setScrollReveal(event.matches);
   });
   window.addEventListener('resize', () => {
@@ -263,6 +317,7 @@
   }, { passive: true });
   setScrollReveal(reducedMotion.matches);
   renderMotionState();
+  renderTypeShowcaseState();
 
   document.querySelectorAll('[data-year]').forEach((item) => {
     item.textContent = String(new Date().getFullYear());
