@@ -201,8 +201,8 @@ img { display: block; max-width: 100%; }
 }
 .gallery-visitors { position: absolute; inset: 0; pointer-events: none; z-index: 2; overflow: hidden; }
 .gallery-visitor { position: absolute; bottom: 6%; left: 0; width: 120px; height: 210px; }
-.gallery-visitor::before { content: ''; position: absolute; bottom: 8%; left: 20%; width: 66%; height: 9px; background: #3f403e30; border-radius: 50%; filter: blur(4px); }
-.gallery-visitor__person { width: 100%; height: 100%; background-image: url('media/home-gallery/visitors.png'); background-size: 800% 300%; background-repeat: no-repeat; clip-path: inset(0 0 8%); }
+.gallery-visitor::before { content: ''; position: absolute; bottom: 3%; left: 20%; width: 66%; height: 9px; background: #3f403e30; border-radius: 50%; filter: blur(4px); }
+.gallery-visitor__person { width: 100%; height: 100%; background-image: url('media/home-gallery/visitors.png'); background-size: 800% 313.15%; background-repeat: no-repeat; }
 .gallery-exhibition .type-showcase__toggle { top: 38px; right: 24px; z-index: 5; }
 @media (max-width: 700px) {
   .gallery-exhibition { --gallery-art-height: 235px; --showcase-gap: 76px; }
@@ -1120,7 +1120,7 @@ html.reveal-enabled .scroll-reveal-item.is-revealed {
 @media (max-width: 430px) {
   :root { --shell: calc(100vw - 28px); }
   .home-feature { width: calc(100vw - 28px); }
-  .intro-layout h1 { font-size: 21px; }
+  .intro-layout h1 { font-size: clamp(17px, 5.3vw, 21px); }
   .filter { padding-left: 14px; font-size: 13px; }
   .project-hero-block { width: calc(100vw - 28px); }
   .detail-page--project-09 .project-media-stack { width: calc(100vw - 28px); }

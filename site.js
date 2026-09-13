@@ -134,7 +134,7 @@
         const x = -140 + progress * (width + 280);
         const walking = cycle < 16 || cycle >= 21;
         const frame = walking ? Math.floor(galleryTime * 7) % 8 : 0;
-        person.style.backgroundPosition = `${frame * 100 / 7}% ${row * 50}%`;
+        person.style.backgroundPosition = `${frame * 100 / 7}% ${[0, 47.0588, 94.9785][row]}%`;
         node.style.transform = `translate3d(${x}px, 0, 0)`;
       });
     };
