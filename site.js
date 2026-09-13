@@ -97,6 +97,47 @@
     let showcaseDragging = false;
     let showcaseHovered = false;
     let showcaseFocused = false;
+    let showcaseVisible = false;
+    let galleryTime = 0;
+    const gallery = typeShowcase.classList.contains('gallery-exhibition');
+    const visitorLayer = document.createElement('div');
+    visitorLayer.className = 'gallery-visitors';
+    visitorLayer.setAttribute('aria-hidden', 'true');
+    const visitors = gallery ? [0, 1, 2].map((row) => {
+      const node = document.createElement('div');
+      node.className = 'gallery-visitor';
+      node.hidden = true;
+      const person = document.createElement('div');
+      person.className = 'gallery-visitor__person';
+      node.append(person);
+      visitorLayer.append(node);
+      return { node, person, row };
+    }) : [];
+    if (gallery) typeShowcaseViewport.append(visitorLayer);
+    const galleryObserver = new IntersectionObserver(([entry]) => {
+      showcaseVisible = entry.isIntersecting;
+      renderTypeShowcaseState();
+    });
+    galleryObserver.observe(typeShowcaseViewport);
+
+    const paintVisitors = (elapsed) => {
+      if (!gallery) return;
+      galleryTime += elapsed;
+      const width = typeShowcaseViewport.clientWidth;
+      visitors.forEach(({ node, person, row }) => {
+        // A staggered walk, a short look at the exhibition, then departure.
+        const cycle = (galleryTime + row * 29) % 96;
+        const active = cycle < 39;
+        node.hidden = !active;
+        if (!active) return;
+        const progress = cycle < 16 ? cycle / 34 : cycle < 21 ? 16 / 34 : (cycle - 5) / 34;
+        const x = -140 + progress * (width + 280);
+        const walking = cycle < 16 || cycle >= 21;
+        const frame = walking ? Math.floor(galleryTime * 7) % 8 : 0;
+        person.style.backgroundPosition = `${frame * 100 / 7}% ${row * 50}%`;
+        node.style.transform = `translate3d(${x}px, 0, 0)`;
+      });
+    };
 
     const clampShowcaseSpeed = (speed) => Math.max(-1200, Math.min(1200, speed));
     const getShowcaseBaseSpeed = () => window.innerWidth <= 900 ? 58 : 74;
@@ -129,15 +170,16 @@
       const elapsed = Math.min(Math.max((now - showcaseLastFrameTime) / 1000, 0), .05);
       showcaseLastFrameTime = now;
 
-      if (!reducedMotion.matches && !typeShowcasePaused && !document.hidden && !showcaseDragging) {
+      if (!reducedMotion.matches && !typeShowcasePaused && !document.hidden && showcaseVisible && !showcaseDragging) {
         const isSlowed = showcaseHovered || showcaseFocused;
-        const baseSpeed = isSlowed ? 6 : getShowcaseBaseSpeed();
+        const baseSpeed = (isSlowed ? 6 : getShowcaseBaseSpeed()) * (gallery ? -1 : 1);
         if (isSlowed) showcaseImpulse *= Math.exp(-elapsed * 10);
         else showcaseImpulse *= Math.exp(-elapsed * 3.2);
         if (Math.abs(showcaseImpulse) < .35) showcaseImpulse = 0;
         showcaseOffset += (baseSpeed + (isSlowed ? 0 : showcaseImpulse)) * elapsed;
         normalizeShowcaseOffset();
         paintShowcase();
+        paintVisitors(elapsed * (isSlowed ? .15 : 1));
       }
 
       requestAnimationFrame(animateShowcase);
@@ -152,7 +194,7 @@
     }, { rootMargin: '120px' });
 
     renderTypeShowcaseState = () => {
-      const paused = typeShowcasePaused || reducedMotion.matches || document.hidden;
+      const paused = typeShowcasePaused || reducedMotion.matches || document.hidden || !showcaseVisible;
       typeShowcase.classList.toggle('is-paused', typeShowcasePaused);
       typeShowcaseToggle?.setAttribute('aria-pressed', String(typeShowcasePaused));
       typeShowcaseToggle?.setAttribute('aria-label', typeShowcasePaused ? '播放文字设计作品轮播' : '暂停文字设计作品轮播');
@@ -192,6 +234,7 @@
     };
 
     typeShowcaseViewport?.addEventListener('pointerdown', (event) => {
+      if (reducedMotion.matches) return;
       if (event.target.closest('button') || (event.pointerType === 'mouse' && event.button !== 0)) return;
       showcaseDragging = true;
       showcasePointerId = event.pointerId;
@@ -228,9 +271,19 @@
         normalizeShowcaseOffset();
         paintShowcase();
       } else if (event.deltaY > 0) {
-        showcaseImpulse = clampShowcaseSpeed(showcaseImpulse + Math.min(event.deltaY * 2.4, 420));
+        showcaseImpulse = clampShowcaseSpeed(showcaseImpulse + Math.min(event.deltaY * 2.4, 420) * (gallery ? -1 : 1));
       }
     }, { passive: false });
+
+    typeShowcaseViewport?.addEventListener('keydown', (event) => {
+      if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+      if (reducedMotion.matches) return;
+      event.preventDefault();
+      showcaseOffset += event.key === 'ArrowRight' ? -180 : 180;
+      showcaseImpulse = 0;
+      normalizeShowcaseOffset();
+      paintShowcase();
+    });
 
     const showcaseResizeObserver = typeof ResizeObserver === 'function' ? new ResizeObserver(measureShowcase) : null;
     showcaseResizeObserver?.observe(typeShowcaseGroup);
