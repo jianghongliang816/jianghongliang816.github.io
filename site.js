@@ -98,12 +98,11 @@
     let showcaseHovered = false;
     let showcaseFocused = false;
     let showcaseVisible = false;
-    let galleryTime = 0;
     const gallery = typeShowcase.classList.contains('gallery-exhibition');
     const visitorLayer = document.createElement('div');
     visitorLayer.className = 'gallery-visitors';
     visitorLayer.setAttribute('aria-hidden', 'true');
-    const visitors = gallery ? [0, 1, 2].map((row) => {
+    const visitors = gallery ? [0, 1, 2, 3, 4, 5].map((index) => {
       const node = document.createElement('div');
       node.className = 'gallery-visitor';
       node.hidden = true;
@@ -111,30 +110,24 @@
       person.className = 'gallery-visitor__person';
       node.append(person);
       visitorLayer.append(node);
-      return { node, person, row };
+      person.style.backgroundPosition = `${(index % 3) * 50}% 50%`;
+      return { node, person, row: index % 3, copy: Math.floor(index / 3) };
     }) : [];
-    if (gallery) typeShowcaseViewport.append(visitorLayer);
+    if (gallery) typeShowcaseTrack.append(visitorLayer);
     const galleryObserver = new IntersectionObserver(([entry]) => {
       showcaseVisible = entry.isIntersecting;
       renderTypeShowcaseState();
     });
     galleryObserver.observe(typeShowcaseViewport);
 
-    const paintVisitors = (elapsed) => {
+    const paintVisitors = () => {
       if (!gallery) return;
-      galleryTime += elapsed;
-      const width = typeShowcaseViewport.clientWidth;
-      visitors.forEach(({ node, person, row }) => {
-        // A staggered walk, a short look at the exhibition, then departure.
-        const cycle = (galleryTime + row * 29) % 96;
-        const active = cycle < 39;
-        node.hidden = !active;
-        if (!active) return;
-        const progress = cycle < 16 ? cycle / 34 : cycle < 21 ? 16 / 34 : (cycle - 5) / 34;
-        const x = -140 + progress * (width + 280);
-        const walking = cycle < 16 || cycle >= 21;
-        const frame = walking ? Math.floor(galleryTime * 7) % 8 : 0;
-        person.style.backgroundPosition = `${frame * 100 / 7}% ${[0, 47.0588, 94.9785][row]}%`;
+      const art = [...typeShowcaseGroup.querySelectorAll('figure')];
+      const gap = Number.parseFloat(getComputedStyle(typeShowcaseGroup).columnGap) || 100;
+      visitors.forEach(({ node, row, copy }) => {
+        const painting = art[[0, 5, 10][row]];
+        const x = painting.offsetLeft + painting.offsetWidth + gap * .22 + copy * showcaseSegmentWidth;
+        node.hidden = false;
         node.style.transform = `translate3d(${x}px, 0, 0)`;
       });
     };
@@ -164,6 +157,7 @@
       showcaseSegmentWidth = nextSegmentWidth;
       normalizeShowcaseOffset();
       paintShowcase();
+      paintVisitors();
     };
 
     const animateShowcase = (now) => {
@@ -179,7 +173,6 @@
         showcaseOffset += (baseSpeed + (isSlowed ? 0 : showcaseImpulse)) * elapsed;
         normalizeShowcaseOffset();
         paintShowcase();
-        paintVisitors(elapsed * (isSlowed ? .15 : 1));
       }
 
       requestAnimationFrame(animateShowcase);
