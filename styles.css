@@ -103,6 +103,10 @@ img { display: block; max-width: 100%; }
   place-items: center;
   overflow: hidden;
   background: var(--pure);
+  opacity: var(--showcase-opacity, 1);
+  transform: translate3d(0, var(--showcase-lift, 0), 0) scale(var(--showcase-scale, 1));
+  transform-origin: 50% 50%;
+  will-change: transform, opacity;
 }
 .type-showcase__item img,
 .type-showcase__item video {

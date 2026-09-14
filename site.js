@@ -86,6 +86,7 @@
     clonedGroup.querySelectorAll('video').forEach((video) => video.setAttribute('aria-hidden', 'true'));
     typeShowcaseTrack.append(clonedGroup);
     typeShowcaseVideos = [...typeShowcase.querySelectorAll('video')];
+    const typeShowcaseItems = [...typeShowcase.querySelectorAll('.type-showcase__item')];
 
     let showcaseSegmentWidth = 0;
     let showcaseOffset = 0;
@@ -98,7 +99,31 @@
     let showcaseHovered = false;
     let showcaseFocused = false;
     const clampShowcaseSpeed = (speed) => Math.max(-1200, Math.min(1200, speed));
-    const getShowcaseBaseSpeed = () => window.innerWidth <= 900 ? 58 : 74;
+    const getShowcaseBaseSpeed = () => window.innerWidth <= 900 ? 72 : 92;
+
+    const paintShowcaseDepth = () => {
+      if (reducedMotion.matches) {
+        typeShowcaseItems.forEach((item) => {
+          item.style.removeProperty('--showcase-scale');
+          item.style.removeProperty('--showcase-lift');
+          item.style.removeProperty('--showcase-opacity');
+        });
+        return;
+      }
+
+      const viewportRect = typeShowcaseViewport.getBoundingClientRect();
+      const edgeZone = Math.max(viewportRect.width * .2, 150);
+      typeShowcaseItems.forEach((item) => {
+        const rect = item.getBoundingClientRect();
+        const center = rect.left + rect.width / 2;
+        const edgeDistance = Math.min(center - viewportRect.left, viewportRect.right - center);
+        const progress = Math.max(0, Math.min(1, edgeDistance / edgeZone));
+        const curve = progress * progress * (3 - 2 * progress);
+        item.style.setProperty('--showcase-scale', (.72 + curve * .28).toFixed(4));
+        item.style.setProperty('--showcase-lift', `${((1 - curve) * 18).toFixed(2)}px`);
+        item.style.setProperty('--showcase-opacity', Math.pow(curve, 1.25).toFixed(4));
+      });
+    };
 
     const normalizeShowcaseOffset = () => {
       if (!showcaseSegmentWidth) return;
@@ -112,6 +137,7 @@
         return;
       }
       typeShowcaseTrack.style.transform = `translate3d(${showcaseOffset}px, 0, 0)`;
+      paintShowcaseDepth();
     };
 
     const measureShowcase = () => {
