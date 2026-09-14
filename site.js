@@ -113,20 +113,30 @@
       }
 
       const viewportRect = typeShowcaseViewport.getBoundingClientRect();
-      const edgeZone = Math.max(viewportRect.width * .2, 150);
+      const clampUnit = (value) => Math.max(0, Math.min(1, value));
       typeShowcaseItems.forEach((item) => {
         const rect = item.getBoundingClientRect();
         const center = rect.left + rect.width / 2;
         const enteringFromLeft = center < viewportRect.left + viewportRect.width / 2;
         const edgeDistance = enteringFromLeft ? center - viewportRect.left : viewportRect.right - center;
-        const progress = Math.max(0, Math.min(1, edgeDistance / edgeZone));
-        // Enter with a quick snap and long settle; exit quickly, then ease into disappearance.
-        const curve = enteringFromLeft
-          ? 1 - Math.pow(1 - progress, 4.5)
-          : Math.pow(progress, 3.25);
-        item.style.setProperty('--showcase-scale', (.72 + curve * .28).toFixed(4));
-        item.style.setProperty('--showcase-lift', `${((1 - curve) * 18).toFixed(2)}px`);
-        item.style.setProperty('--showcase-opacity', Math.pow(curve, .86).toFixed(4));
+        let scaleCurve;
+        let opacityCurve;
+
+        if (enteringFromLeft) {
+          const scaleProgress = clampUnit((edgeDistance + 55) / 165);
+          const opacityProgress = clampUnit((edgeDistance + 50) / 125);
+          scaleCurve = 1 - Math.pow(1 - scaleProgress, 2.8);
+          opacityCurve = opacityProgress * opacityProgress * (3 - 2 * opacityProgress);
+        } else {
+          const scaleProgress = clampUnit((edgeDistance + 25) / 150);
+          const opacityProgress = clampUnit((edgeDistance + 5) / 70);
+          scaleCurve = 1 - Math.pow(1 - scaleProgress, 2.2);
+          opacityCurve = opacityProgress * opacityProgress * (3 - 2 * opacityProgress);
+        }
+
+        item.style.setProperty('--showcase-scale', (.72 + scaleCurve * .28).toFixed(4));
+        item.style.setProperty('--showcase-lift', `${((1 - scaleCurve) * 18).toFixed(2)}px`);
+        item.style.setProperty('--showcase-opacity', opacityCurve.toFixed(4));
       });
     };
 
