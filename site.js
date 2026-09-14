@@ -154,25 +154,22 @@
 
   const syncHomeProjectReveal = () => {
     if (!body.classList.contains('work-page') || !document.documentElement.classList.contains('reveal-enabled')) return;
-    const projectGrid = document.querySelector('.projects');
-    if (!projectGrid) return;
     const homeGroups = [...revealGroups.entries()]
-      .filter(([name]) => name.startsWith('home-'))
-      .sort(([left], [right]) => Number(left.slice(5)) - Number(right.slice(5)));
+      .filter(([name]) => name.startsWith('work-stage-') || name.startsWith('home-'))
+      .sort(([left], [right]) => {
+        const stageOrder = { 'work-stage-hero': -2, 'work-stage-showcase': -1 };
+        const leftOrder = stageOrder[left] ?? Number(left.slice(5));
+        const rightOrder = stageOrder[right] ?? Number(right.slice(5));
+        return leftOrder - rightOrder;
+      });
     if (!homeGroups.length) return;
-
-    const gridRect = projectGrid.getBoundingClientRect();
-    if (gridRect.top > window.innerHeight * .82 || gridRect.bottom < window.innerHeight * .12) {
-      homeGroups.forEach(([, group]) => group.forEach((item) => {
-        item.classList.remove('is-revealed', 'is-retreating');
-      }));
-      return;
-    }
 
     const viewportCenter = window.innerHeight * .5;
     const activeName = homeGroups.reduce((closest, [name, group]) => {
-      const rect = group[0].getBoundingClientRect();
-      const distance = Math.abs(rect.top + rect.height * .5 - viewportCenter);
+      const rects = group.map((item) => item.getBoundingClientRect());
+      const top = Math.min(...rects.map((rect) => rect.top));
+      const bottom = Math.max(...rects.map((rect) => rect.bottom));
+      const distance = Math.abs((top + bottom) * .5 - viewportCenter);
       return !closest || distance < closest.distance ? { name, distance } : closest;
     }, null)?.name;
     const activeIndex = homeGroups.findIndex(([name]) => name === activeName);
@@ -468,6 +465,13 @@
       addRevealGroup(groupName, revealCards.filter((card) => card.dataset.revealGroup === groupName));
     });
 
+    if (body.classList.contains('work-page')) {
+      const hero = document.querySelector('.home-feature');
+      const showcaseStage = [...document.querySelectorAll('.work-intro, .type-showcase')];
+      if (hero) addRevealGroup('work-stage-hero', [hero]);
+      if (showcaseStage.length) addRevealGroup('work-stage-showcase', showcaseStage);
+    }
+
     document.querySelectorAll('.project-copy-board').forEach((item, index) => {
       addRevealGroup(`detail-board-${index}`, [item]);
     });
@@ -533,7 +537,10 @@
           return;
         }
 
-        if (body.classList.contains('work-page') && entry.target.classList.contains('project-card')) {
+        if (body.classList.contains('work-page') && (
+          entry.target.classList.contains('project-card') ||
+          entry.target.dataset.revealGroup?.startsWith('work-stage-')
+        )) {
           requestHomeProjectReveal();
           return;
         }
