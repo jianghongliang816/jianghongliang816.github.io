@@ -229,9 +229,9 @@ img { display: block; max-width: 100%; }
   grid-row: 1;
   align-self: center;
   justify-self: center;
-  width: 82%;
+  width: 55%;
   min-width: 0;
-  max-width: 420px;
+  max-width: 280px;
   margin: 0;
 }
 .brand-proof-card img { display: block; width: 100%; height: auto; }
