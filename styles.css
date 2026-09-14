@@ -140,6 +140,14 @@ img { display: block; max-width: 100%; }
 .type-showcase.is-paused .type-showcase__play { display: block; }
 
 .projects { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: start; }
+.brand-main { padding-top: clamp(54px, 7vw, 118px); }
+.brand-projects {
+  display: grid;
+  grid-template-columns: minmax(0, 58%) minmax(0, 42%);
+  row-gap: clamp(52px, 7vw, 112px);
+  align-items: start;
+}
+.brand-projects .project-card { grid-column: 1; }
 .project-card,
 .scroll-reveal-item {
   min-width: 0;
@@ -1083,6 +1091,8 @@ html.reveal-enabled .scroll-reveal-item.is-revealed {
 
 @media (max-width: 640px) {
   .projects { grid-template-columns: 1fr; gap: 16px; }
+  .brand-main { padding-top: 24px; }
+  .brand-projects { grid-template-columns: 1fr; row-gap: 24px; }
   html.reveal-enabled .project-card,
   html.reveal-enabled .scroll-reveal-item { --reveal-y: 72px; }
   .project-cover--xinyuan, .project-cover--qinggua, .project-cover--jiahe, .project-cover--chengyuan, .project-cover--rongxue, .project-cover--lejing, .project-cover--fragrance, .project-cover--green-character, .project-cover--project-09, .project-cover--project-10, .project-cover--project-11, .project-cover--project-12, .project-cover--project-13, .project-cover--project-14, .project-cover--project-15, .project-cover--project-16, .project-cover--project-17, .project-cover--project-18, .project-cover--project-19, .project-cover--project-20, .project-cover--project-21, .project-cover--project-22, .project-cover--project-23, .project-empty { height: 112vw; }
