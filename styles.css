@@ -1039,7 +1039,7 @@ html.reveal-enabled .scroll-reveal-item.is-revealed {
 @media (max-width: 430px) {
   :root { --shell: calc(100vw - 28px); }
   .home-feature { width: calc(100vw - 28px); }
-  .intro-layout h1 { font-size: 21px; }
+  .intro-layout h1 { font-size: clamp(17px, 5.3vw, 21px); }
   .filter { padding-left: 14px; font-size: 13px; }
   .project-hero-block { width: calc(100vw - 28px); }
   .detail-page--project-09 .project-media-stack { width: calc(100vw - 28px); }

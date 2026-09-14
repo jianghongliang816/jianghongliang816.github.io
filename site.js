@@ -97,7 +97,6 @@
     let showcaseDragging = false;
     let showcaseHovered = false;
     let showcaseFocused = false;
-
     const clampShowcaseSpeed = (speed) => Math.max(-1200, Math.min(1200, speed));
     const getShowcaseBaseSpeed = () => window.innerWidth <= 900 ? 58 : 74;
 
@@ -169,13 +168,19 @@
     });
 
     typeShowcase.addEventListener('pointerover', (event) => {
-      if (event.target.closest('.type-showcase__item')) showcaseHovered = true;
+      if (event.target.closest('.type-showcase__item')) {
+        showcaseHovered = true;
+        showcaseImpulse = 0;
+      }
     });
     typeShowcase.addEventListener('pointerout', (event) => {
       if (!event.relatedTarget?.closest?.('.type-showcase__item')) showcaseHovered = false;
     });
     typeShowcase.addEventListener('focusin', (event) => {
-      if (event.target.closest('.type-showcase__item')) showcaseFocused = true;
+      if (event.target.closest('.type-showcase__item')) {
+        showcaseFocused = true;
+        showcaseImpulse = 0;
+      }
     });
     typeShowcase.addEventListener('focusout', (event) => {
       if (!typeShowcase.contains(event.relatedTarget)) showcaseFocused = false;
