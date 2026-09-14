@@ -293,6 +293,17 @@ html.reveal-enabled .scroll-reveal-item.is-revealed {
   opacity: 1;
   transform: translate3d(0, 0, 0) scale(1);
 }
+html.reveal-enabled .work-page .projects .project-card {
+  transition:
+    opacity 1600ms cubic-bezier(.4, 0, .2, 1),
+    transform 1600ms cubic-bezier(.2, .7, .2, 1);
+  will-change: opacity, transform;
+}
+html.reveal-enabled .work-page .projects .project-card.is-retreating:not(.is-revealed) {
+  opacity: .02;
+  transform: translate3d(0, -56px, 0) scale(.94);
+  transform-origin: 50% 50%;
+}
 .project-card a { display: block; }
 .project-cover { position: relative; overflow: hidden; background: var(--pure); }
 .project-cover--xinyuan, .project-cover--qinggua, .project-cover--jiahe, .project-cover--chengyuan, .project-cover--rongxue, .project-cover--lejing, .project-cover--fragrance, .project-cover--green-character, .project-cover--project-09, .project-cover--project-10, .project-cover--project-11, .project-cover--project-12, .project-cover--project-13, .project-cover--project-14, .project-cover--project-15, .project-cover--project-16, .project-cover--project-17, .project-cover--project-18, .project-cover--project-19, .project-cover--project-20, .project-cover--project-21, .project-cover--project-22, .project-cover--project-23, .project-empty { height: clamp(420px, 40vw, 720px); }

@@ -163,7 +163,9 @@
 
     const gridRect = projectGrid.getBoundingClientRect();
     if (gridRect.top > window.innerHeight * .82 || gridRect.bottom < window.innerHeight * .12) {
-      homeGroups.forEach(([, group]) => group.forEach((item) => item.classList.remove('is-revealed')));
+      homeGroups.forEach(([, group]) => group.forEach((item) => {
+        item.classList.remove('is-revealed', 'is-retreating');
+      }));
       return;
     }
 
@@ -173,8 +175,12 @@
       const distance = Math.abs(rect.top + rect.height * .5 - viewportCenter);
       return !closest || distance < closest.distance ? { name, distance } : closest;
     }, null)?.name;
-    homeGroups.forEach(([name, group]) => {
-      group.forEach((item) => item.classList.toggle('is-revealed', name === activeName));
+    const activeIndex = homeGroups.findIndex(([name]) => name === activeName);
+    homeGroups.forEach(([name, group], groupIndex) => {
+      group.forEach((item) => {
+        item.classList.toggle('is-revealed', name === activeName);
+        item.classList.toggle('is-retreating', groupIndex < activeIndex);
+      });
     });
   };
 
