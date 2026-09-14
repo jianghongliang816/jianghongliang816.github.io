@@ -141,7 +141,10 @@ img { display: block; max-width: 100%; }
 
 .projects { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: start; }
 .brand-main { padding-top: clamp(32px, 4vw, 72px); }
-.brand-intro { width: 100%; }
+.brand-intro {
+  width: min(78%, 1600px);
+  margin-inline: auto;
+}
 .brand-intro .brand-intro__panel { position: relative; width: 100%; margin: 0; overflow: hidden; }
 .brand-intro .brand-intro__panel > img {
   display: block;
@@ -150,9 +153,9 @@ img { display: block; max-width: 100%; }
   height: auto;
   margin-left: calc((100% - var(--brand-panel-width, 100%)) / 2);
 }
-.brand-intro__panel:nth-child(1) { --brand-panel-width: 118%; }
-.brand-intro__panel:nth-child(2) { --brand-panel-width: 135%; }
-.brand-intro__panel:nth-child(3) { --brand-panel-width: 128%; }
+.brand-intro__panel:nth-child(1),
+.brand-intro__panel:nth-child(2),
+.brand-intro__panel:nth-child(3) { --brand-panel-width: 100%; }
 .brand-video {
   position: absolute;
   left: 35.98%;
@@ -229,9 +232,9 @@ img { display: block; max-width: 100%; }
   grid-row: 1;
   align-self: center;
   justify-self: center;
-  width: 55%;
+  width: 82%;
   min-width: 0;
-  max-width: 280px;
+  max-width: 420px;
   margin: 0;
 }
 .brand-proof-card img { display: block; width: 100%; height: auto; }
@@ -1179,6 +1182,7 @@ html.reveal-enabled .scroll-reveal-item.is-revealed {
 @media (max-width: 640px) {
   .projects { grid-template-columns: 1fr; gap: 16px; }
   .brand-main { padding-top: 24px; }
+  .brand-intro { width: 100%; }
   .brand-projects { grid-template-columns: 1fr; row-gap: 24px; }
   .brand-video__controls { opacity: 1; }
   .brand-video__sound { width: 18px; height: 18px; padding: 3px; }
