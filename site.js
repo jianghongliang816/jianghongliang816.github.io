@@ -421,6 +421,10 @@
       addRevealGroup(`about-section-${index}`, [item]);
     });
 
+    document.querySelectorAll('.brand-intro__panel:not(:first-child), .brand-proof-card').forEach((item, index) => {
+      addRevealGroup(`brand-section-${index}`, [item]);
+    });
+
     revealGroups.forEach((items, groupName) => addRevealGroup(groupName, items));
   };
 
