@@ -1,7 +1,20 @@
 (() => {
   const body = document.body;
+  const siteHeader = document.querySelector('.site-header');
   const menu = document.querySelector('[data-menu]');
   const menuToggle = document.querySelector('[data-menu-toggle]');
+
+  let headerScrollFrame;
+  const syncHeaderState = () => {
+    headerScrollFrame = undefined;
+    siteHeader?.classList.toggle('is-compact', window.scrollY > 24);
+  };
+  const requestHeaderState = () => {
+    if (headerScrollFrame) return;
+    headerScrollFrame = requestAnimationFrame(syncHeaderState);
+  };
+  window.addEventListener('scroll', requestHeaderState, { passive: true });
+  syncHeaderState();
 
   const setMenu = (open) => {
     if (!menu || !menuToggle) return;

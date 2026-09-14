@@ -16,7 +16,7 @@
 
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
-body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--sans); -webkit-font-smoothing: antialiased; }
+body { margin: 0; padding-top: var(--header-h); background: var(--paper); color: var(--ink); font-family: var(--sans); -webkit-font-smoothing: antialiased; }
 body.menu-open { overflow: hidden; }
 a { color: inherit; text-decoration: none; }
 button { color: inherit; font: inherit; }
@@ -24,7 +24,9 @@ img { display: block; max-width: 100%; }
 .shell { width: var(--shell); margin-inline: auto; }
 
 .site-header {
-  position: relative;
+  position: fixed;
+  top: 0;
+  left: 50%;
   z-index: 40;
   width: var(--shell);
   height: var(--header-h);
@@ -33,6 +35,9 @@ img { display: block; max-width: 100%; }
   display: flex;
   align-items: center;
   justify-content: center;
+  transform: translateX(-50%);
+  background: transparent;
+  transition: height 520ms cubic-bezier(.16, 1, .3, 1);
 }
 .desktop-nav {
   display: flex;
@@ -43,6 +48,8 @@ img { display: block; max-width: 100%; }
   font-weight: 300;
   line-height: 1;
   letter-spacing: -.035em;
+  transform-origin: 50% 50%;
+  transition: transform 520ms cubic-bezier(.16, 1, .3, 1);
 }
 .desktop-nav a, .desktop-nav button {
   border: 0;
@@ -51,9 +58,21 @@ img { display: block; max-width: 100%; }
   cursor: pointer;
   position: relative;
   opacity: .5;
-  transition: opacity 180ms ease-out;
+  transition: opacity 220ms ease-out, text-shadow 220ms ease-out;
 }
 .desktop-nav .is-current { opacity: 1; }
+.site-header.is-compact { height: clamp(58px, 5vw, 82px); }
+.site-header.is-compact .desktop-nav { transform: scale(.7); }
+.site-header.is-compact .desktop-nav a,
+.site-header.is-compact .desktop-nav button { opacity: .46; }
+.site-header.is-compact .desktop-nav .is-current { opacity: .72; }
+.site-header.is-compact .desktop-nav a:hover,
+.site-header.is-compact .desktop-nav a:focus-visible,
+.site-header.is-compact .desktop-nav button:hover,
+.site-header.is-compact .desktop-nav button:focus-visible {
+  opacity: 1;
+  text-shadow: 0 0 12px rgba(255, 255, 255, .92), 0 0 2px rgba(255, 255, 255, .95);
+}
 .home-feature { width: calc(100vw - 96px); margin-inline: auto; }
 .home-feature__media { position: relative; width: 100%; overflow: hidden; background: var(--pure); }
 .home-feature__video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: contain; background: var(--pure); }
@@ -961,6 +980,7 @@ html.reveal-enabled .scroll-reveal-item.is-revealed {
 /* About */
 .about-page { min-height: 100vh; }
 .about-page .site-header { height: var(--header-h); }
+.about-page .site-header.is-compact { height: clamp(58px, 5vw, 82px); }
 .about-main {
   width: min(1280px, 90vw);
   margin-inline: auto;
