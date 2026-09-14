@@ -143,8 +143,9 @@ img { display: block; max-width: 100%; }
 .brand-main { padding-top: clamp(54px, 7vw, 118px); }
 .brand-projects {
   display: grid;
-  grid-template-columns: minmax(0, 58%) minmax(0, 42%);
-  row-gap: clamp(52px, 7vw, 112px);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: 16px;
+  row-gap: 16px;
   align-items: start;
 }
 .brand-projects .project-card { grid-column: 1; }
