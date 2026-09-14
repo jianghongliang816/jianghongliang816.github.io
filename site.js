@@ -99,7 +99,8 @@
     let showcaseHovered = false;
     let showcaseFocused = false;
     const clampShowcaseSpeed = (speed) => Math.max(-1200, Math.min(1200, speed));
-    const getShowcaseBaseSpeed = () => window.innerWidth <= 900 ? 72 : 92;
+    const getShowcaseHoverSpeed = () => window.innerWidth <= 900 ? 72 : 92;
+    const getShowcaseBaseSpeed = () => getShowcaseHoverSpeed() * 1.5;
 
     const paintShowcaseDepth = () => {
       if (reducedMotion.matches) {
@@ -116,12 +117,16 @@
       typeShowcaseItems.forEach((item) => {
         const rect = item.getBoundingClientRect();
         const center = rect.left + rect.width / 2;
-        const edgeDistance = Math.min(center - viewportRect.left, viewportRect.right - center);
+        const enteringFromLeft = center < viewportRect.left + viewportRect.width / 2;
+        const edgeDistance = enteringFromLeft ? center - viewportRect.left : viewportRect.right - center;
         const progress = Math.max(0, Math.min(1, edgeDistance / edgeZone));
-        const curve = progress * progress * (3 - 2 * progress);
+        // Enter with a quick snap and long settle; exit quickly, then ease into disappearance.
+        const curve = enteringFromLeft
+          ? 1 - Math.pow(1 - progress, 4.5)
+          : Math.pow(progress, 3.25);
         item.style.setProperty('--showcase-scale', (.72 + curve * .28).toFixed(4));
         item.style.setProperty('--showcase-lift', `${((1 - curve) * 18).toFixed(2)}px`);
-        item.style.setProperty('--showcase-opacity', Math.pow(curve, 1.25).toFixed(4));
+        item.style.setProperty('--showcase-opacity', Math.pow(curve, .86).toFixed(4));
       });
     };
 
@@ -156,7 +161,7 @@
 
       if (!reducedMotion.matches && !typeShowcasePaused && !document.hidden && !showcaseDragging) {
         const isSlowed = showcaseHovered || showcaseFocused;
-        const baseSpeed = isSlowed ? 6 : getShowcaseBaseSpeed();
+        const baseSpeed = isSlowed ? getShowcaseHoverSpeed() : getShowcaseBaseSpeed();
         if (isSlowed) showcaseImpulse *= Math.exp(-elapsed * 10);
         else showcaseImpulse *= Math.exp(-elapsed * 3.2);
         if (Math.abs(showcaseImpulse) < .35) showcaseImpulse = 0;
