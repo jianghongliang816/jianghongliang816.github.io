@@ -31,6 +31,46 @@
     });
   });
 
+  document.querySelectorAll('[data-brand-video]').forEach((player) => {
+    const video = player.querySelector('video');
+    const start = player.querySelector('[data-brand-video-start]');
+    const sound = player.querySelector('[data-brand-video-sound]');
+    const progress = player.querySelector('[data-brand-video-progress]');
+    if (!video || !start || !sound || !progress) return;
+
+    const syncBrandVideo = () => {
+      player.classList.toggle('is-playing', !video.paused && !video.ended);
+      player.classList.toggle('is-muted', video.muted);
+      start.setAttribute('aria-label', video.paused ? '播放访谈视频' : '暂停访谈视频');
+      sound.setAttribute('aria-pressed', String(!video.muted));
+      sound.setAttribute('aria-label', video.muted ? '打开视频声音' : '关闭视频声音');
+      if (Number.isFinite(video.duration) && video.duration > 0) {
+        progress.value = String(Math.round((video.currentTime / video.duration) * 1000));
+      }
+    };
+
+    start.addEventListener('click', () => {
+      player.classList.add('has-started');
+      if (video.paused) video.play().catch(() => {});
+      else video.pause();
+    });
+    video.addEventListener('click', () => {
+      if (video.paused) video.play().catch(() => {});
+      else video.pause();
+    });
+    sound.addEventListener('click', () => {
+      video.muted = !video.muted;
+      syncBrandVideo();
+    });
+    progress.addEventListener('input', () => {
+      if (Number.isFinite(video.duration)) video.currentTime = (Number(progress.value) / 1000) * video.duration;
+    });
+    ['play', 'pause', 'ended', 'timeupdate', 'loadedmetadata', 'volumechange'].forEach((eventName) => {
+      video.addEventListener(eventName, syncBrandVideo);
+    });
+    syncBrandVideo();
+  });
+
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape' && menu && !menu.hidden) setMenu(false);
   });

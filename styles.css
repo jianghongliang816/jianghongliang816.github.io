@@ -140,8 +140,74 @@ img { display: block; max-width: 100%; }
 .type-showcase.is-paused .type-showcase__play { display: block; }
 
 .projects { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: start; }
-.brand-main { padding-top: clamp(54px, 7vw, 118px); }
+.brand-main { padding-top: clamp(32px, 4vw, 72px); }
+.brand-intro { width: 100%; }
+.brand-intro__panel { position: relative; width: 100%; margin: 0; }
+.brand-intro__panel img { display: block; width: 100%; height: auto; }
+.brand-intro__panel--video { overflow: hidden; }
+.brand-video {
+  position: absolute;
+  left: 39.05%;
+  top: 14%;
+  width: 24.82%;
+  height: 58.2%;
+  overflow: hidden;
+  border-radius: clamp(3px, .35vw, 10px);
+  background: transparent;
+}
+.brand-video video { display: block; width: 100%; height: 100%; object-fit: cover; opacity: 0; }
+.brand-video.has-started video { opacity: 1; }
+.brand-video__start {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  width: clamp(38px, 4vw, 72px);
+  height: clamp(38px, 4vw, 72px);
+  padding: 0;
+  display: grid;
+  place-items: center;
+  transform: translate(-50%, -50%);
+  border: 1px solid #ffffffb8;
+  border-radius: 50%;
+  background: #00000052;
+  color: #fff;
+  cursor: pointer;
+  backdrop-filter: blur(5px);
+}
+.brand-video__start svg { width: 48%; fill: currentColor; }
+.brand-video.is-playing .brand-video__start { opacity: 0; pointer-events: none; }
+.brand-video__controls {
+  position: absolute;
+  z-index: 2;
+  left: 4%;
+  right: 4%;
+  bottom: 3%;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 180ms ease-out;
+}
+.brand-video.has-started .brand-video__controls,
+.brand-video:focus-within .brand-video__controls,
+.brand-video:hover .brand-video__controls { opacity: 1; }
+.brand-video__sound {
+  width: 22px;
+  height: 22px;
+  padding: 4px;
+  flex: 0 0 auto;
+  border: 0;
+  border-radius: 50%;
+  background: #0008;
+  color: #fff;
+  cursor: pointer;
+}
+.brand-video__sound svg { width: 100%; height: 100%; fill: currentColor; stroke: currentColor; stroke-width: 1.5; }
+.brand-video__sound-on { display: none; }
+.brand-video:not(.is-muted) .brand-video__sound-off { display: none; }
+.brand-video:not(.is-muted) .brand-video__sound-on { display: block; }
+.brand-video__progress { width: 100%; height: 14px; margin: 0; cursor: pointer; accent-color: #fff; }
 .brand-projects {
+  margin-top: clamp(72px, 9vw, 150px);
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   column-gap: 16px;
@@ -149,6 +215,17 @@ img { display: block; max-width: 100%; }
   align-items: start;
 }
 .brand-projects .project-card { grid-column: 1; }
+.brand-proof-card {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: center;
+  justify-self: center;
+  width: 82%;
+  min-width: 0;
+  max-width: 420px;
+  margin: 0;
+}
+.brand-proof-card img { display: block; width: 100%; height: auto; }
 .project-card,
 .scroll-reveal-item {
   min-width: 0;
@@ -1094,6 +1171,9 @@ html.reveal-enabled .scroll-reveal-item.is-revealed {
   .projects { grid-template-columns: 1fr; gap: 16px; }
   .brand-main { padding-top: 24px; }
   .brand-projects { grid-template-columns: 1fr; row-gap: 24px; }
+  .brand-video__controls { opacity: 1; }
+  .brand-video__sound { width: 18px; height: 18px; padding: 3px; }
+  .brand-proof-card { grid-column: 1; grid-row: 2; width: 74%; margin-block: 10px 34px; }
   html.reveal-enabled .project-card,
   html.reveal-enabled .scroll-reveal-item { --reveal-y: 72px; }
   .project-cover--xinyuan, .project-cover--qinggua, .project-cover--jiahe, .project-cover--chengyuan, .project-cover--rongxue, .project-cover--lejing, .project-cover--fragrance, .project-cover--green-character, .project-cover--project-09, .project-cover--project-10, .project-cover--project-11, .project-cover--project-12, .project-cover--project-13, .project-cover--project-14, .project-cover--project-15, .project-cover--project-16, .project-cover--project-17, .project-cover--project-18, .project-cover--project-19, .project-cover--project-20, .project-cover--project-21, .project-cover--project-22, .project-cover--project-23, .project-empty { height: 112vw; }
