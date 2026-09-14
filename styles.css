@@ -225,7 +225,7 @@ img { display: block; max-width: 100%; }
 .brand-projects .project-card { grid-column: 1; }
 .brand-projects .project-cover { height: auto; aspect-ratio: 3 / 4; }
 .brand-proof-card {
-  grid-column: 2;
+  grid-column: 3;
   grid-row: 1;
   align-self: center;
   justify-self: center;
