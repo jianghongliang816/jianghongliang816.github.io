@@ -116,6 +116,27 @@
   let lastRevealScrollY = window.scrollY;
   let revealResetFrame;
   let revealGroups = new Map();
+  const brandIntroPanels = [...document.querySelectorAll('.brand-intro__panel')];
+  let brandRevealFrame;
+
+  const syncBrandIntroReveal = () => {
+    if (!brandIntroPanels.length || !document.documentElement.classList.contains('reveal-enabled')) return;
+    const viewportCenter = window.innerHeight * .5;
+    const activePanel = brandIntroPanels.reduce((closest, panel) => {
+      const rect = panel.getBoundingClientRect();
+      const distance = Math.abs(rect.top + rect.height * .5 - viewportCenter);
+      return !closest || distance < closest.distance ? { panel, distance } : closest;
+    }, null)?.panel;
+    brandIntroPanels.forEach((panel) => panel.classList.toggle('is-revealed', panel === activePanel));
+  };
+
+  const requestBrandIntroReveal = () => {
+    if (brandRevealFrame) return;
+    brandRevealFrame = requestAnimationFrame(() => {
+      brandRevealFrame = undefined;
+      syncBrandIntroReveal();
+    });
+  };
 
   if (typeShowcase && typeShowcaseTrack && typeShowcaseGroup) {
     const typeShowcaseViewport = typeShowcase.querySelector('.type-showcase__viewport');
@@ -355,6 +376,8 @@
   };
 
   window.addEventListener('scroll', updateRevealScrollDirection, { passive: true });
+  window.addEventListener('scroll', requestBrandIntroReveal, { passive: true });
+  window.addEventListener('resize', requestBrandIntroReveal, { passive: true });
 
   const getProjectColumnCount = () => {
     const projectGrid = document.querySelector('.projects');
@@ -421,7 +444,7 @@
       addRevealGroup(`about-section-${index}`, [item]);
     });
 
-    document.querySelectorAll('.brand-intro__panel:not(:first-child), .brand-proof-card').forEach((item, index) => {
+    document.querySelectorAll('.brand-intro__panel, .brand-proof-card').forEach((item, index) => {
       addRevealGroup(`brand-section-${index}`, [item]);
     });
 
@@ -445,6 +468,15 @@
       entries.forEach((entry) => {
         const group = revealGroups.get(entry.target.dataset.revealGroup) || [entry.target];
 
+        if (document.body.classList.contains('brand-page')) {
+          if (entry.target.classList.contains('brand-intro__panel')) {
+            requestBrandIntroReveal();
+            return;
+          }
+          group.forEach((item) => item.classList.toggle('is-revealed', entry.isIntersecting));
+          return;
+        }
+
         if (entry.isIntersecting && revealScrollDirection === 'down') {
           group.forEach((item) => item.classList.remove('is-revealed'));
           requestAnimationFrame(() => group.forEach((item) => item.classList.add('is-revealed')));
@@ -458,6 +490,7 @@
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         revealGroups.forEach((group) => revealObserver?.observe(group[0]));
+        syncBrandIntroReveal();
       });
     });
   };
