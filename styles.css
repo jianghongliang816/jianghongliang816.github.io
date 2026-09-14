@@ -142,14 +142,22 @@ img { display: block; max-width: 100%; }
 .projects { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: start; }
 .brand-main { padding-top: clamp(32px, 4vw, 72px); }
 .brand-intro { width: 100%; }
-.brand-intro__panel { position: relative; width: 100%; margin: 0; }
-.brand-intro__panel img { display: block; width: 100%; height: auto; }
-.brand-intro__panel--video { overflow: hidden; }
+.brand-intro .brand-intro__panel { position: relative; width: 100%; margin: 0; overflow: hidden; }
+.brand-intro .brand-intro__panel > img {
+  display: block;
+  width: var(--brand-panel-width, 100%);
+  max-width: none;
+  height: auto;
+  margin-left: calc((100% - var(--brand-panel-width, 100%)) / 2);
+}
+.brand-intro__panel:nth-child(1) { --brand-panel-width: 118%; }
+.brand-intro__panel:nth-child(2) { --brand-panel-width: 135%; }
+.brand-intro__panel:nth-child(3) { --brand-panel-width: 128%; }
 .brand-video {
   position: absolute;
-  left: 39.05%;
+  left: 35.98%;
   top: 14%;
-  width: 24.82%;
+  width: 31.77%;
   height: 58.2%;
   overflow: hidden;
   border-radius: clamp(3px, .35vw, 10px);
@@ -209,12 +217,13 @@ img { display: block; max-width: 100%; }
 .brand-projects {
   margin-top: clamp(72px, 9vw, 150px);
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 42fr) minmax(0, 29fr) minmax(0, 29fr);
   column-gap: 16px;
   row-gap: 16px;
   align-items: start;
 }
 .brand-projects .project-card { grid-column: 1; }
+.brand-projects .project-cover { height: auto; aspect-ratio: 3 / 4; }
 .brand-proof-card {
   grid-column: 2;
   grid-row: 1;
