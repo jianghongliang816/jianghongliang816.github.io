@@ -131,6 +131,7 @@
   let revealGroups = new Map();
   const brandIntroPanels = [...document.querySelectorAll('.brand-intro__panel')];
   let brandRevealFrame;
+  let homeRevealFrame;
 
   const syncBrandIntroReveal = () => {
     if (!brandIntroPanels.length || !document.documentElement.classList.contains('reveal-enabled')) return;
@@ -148,6 +149,40 @@
     brandRevealFrame = requestAnimationFrame(() => {
       brandRevealFrame = undefined;
       syncBrandIntroReveal();
+    });
+  };
+
+  const syncHomeProjectReveal = () => {
+    if (!body.classList.contains('work-page') || !document.documentElement.classList.contains('reveal-enabled')) return;
+    const projectGrid = document.querySelector('.projects');
+    if (!projectGrid) return;
+    const homeGroups = [...revealGroups.entries()]
+      .filter(([name]) => name.startsWith('home-'))
+      .sort(([left], [right]) => Number(left.slice(5)) - Number(right.slice(5)));
+    if (!homeGroups.length) return;
+
+    const gridRect = projectGrid.getBoundingClientRect();
+    if (gridRect.top > window.innerHeight * .82 || gridRect.bottom < window.innerHeight * .12) {
+      homeGroups.forEach(([, group]) => group.forEach((item) => item.classList.remove('is-revealed')));
+      return;
+    }
+
+    const viewportCenter = window.innerHeight * .5;
+    const activeName = homeGroups.reduce((closest, [name, group]) => {
+      const rect = group[0].getBoundingClientRect();
+      const distance = Math.abs(rect.top + rect.height * .5 - viewportCenter);
+      return !closest || distance < closest.distance ? { name, distance } : closest;
+    }, null)?.name;
+    homeGroups.forEach(([name, group]) => {
+      group.forEach((item) => item.classList.toggle('is-revealed', name === activeName));
+    });
+  };
+
+  const requestHomeProjectReveal = () => {
+    if (homeRevealFrame) return;
+    homeRevealFrame = requestAnimationFrame(() => {
+      homeRevealFrame = undefined;
+      syncHomeProjectReveal();
     });
   };
 
@@ -391,6 +426,8 @@
   window.addEventListener('scroll', updateRevealScrollDirection, { passive: true });
   window.addEventListener('scroll', requestBrandIntroReveal, { passive: true });
   window.addEventListener('resize', requestBrandIntroReveal, { passive: true });
+  window.addEventListener('scroll', requestHomeProjectReveal, { passive: true });
+  window.addEventListener('resize', requestHomeProjectReveal, { passive: true });
 
   const getProjectColumnCount = () => {
     const projectGrid = document.querySelector('.projects');
@@ -490,6 +527,11 @@
           return;
         }
 
+        if (body.classList.contains('work-page') && entry.target.classList.contains('project-card')) {
+          requestHomeProjectReveal();
+          return;
+        }
+
         if (entry.isIntersecting && revealScrollDirection === 'down') {
           group.forEach((item) => item.classList.remove('is-revealed'));
           requestAnimationFrame(() => group.forEach((item) => item.classList.add('is-revealed')));
@@ -504,6 +546,7 @@
       requestAnimationFrame(() => {
         revealGroups.forEach((group) => revealObserver?.observe(group[0]));
         syncBrandIntroReveal();
+        syncHomeProjectReveal();
       });
     });
   };
