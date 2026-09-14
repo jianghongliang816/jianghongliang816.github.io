@@ -166,8 +166,8 @@
 
       if (!reducedMotion.matches && !typeShowcasePaused && !document.hidden && showcaseVisible && !showcaseDragging) {
         const isSlowed = showcaseHovered || showcaseFocused;
-        const baseSpeed = (isSlowed ? 0 : getShowcaseBaseSpeed()) * (gallery ? -1 : 1);
-        if (isSlowed) showcaseImpulse = 0;
+        const baseSpeed = (isSlowed ? 6 : getShowcaseBaseSpeed()) * (gallery ? -1 : 1);
+        if (isSlowed) showcaseImpulse *= Math.exp(-elapsed * 10);
         else showcaseImpulse *= Math.exp(-elapsed * 3.2);
         if (Math.abs(showcaseImpulse) < .35) showcaseImpulse = 0;
         showcaseOffset += (baseSpeed + (isSlowed ? 0 : showcaseImpulse)) * elapsed;
@@ -204,19 +204,13 @@
     });
 
     typeShowcase.addEventListener('pointerover', (event) => {
-      if (event.target.closest('.type-showcase__item')) {
-        showcaseHovered = true;
-        showcaseImpulse = 0;
-      }
+      if (event.target.closest('.type-showcase__item')) showcaseHovered = true;
     });
     typeShowcase.addEventListener('pointerout', (event) => {
       if (!event.relatedTarget?.closest?.('.type-showcase__item')) showcaseHovered = false;
     });
     typeShowcase.addEventListener('focusin', (event) => {
-      if (event.target.closest('.type-showcase__item')) {
-        showcaseFocused = true;
-        showcaseImpulse = 0;
-      }
+      if (event.target.closest('.type-showcase__item')) showcaseFocused = true;
     });
     typeShowcase.addEventListener('focusout', (event) => {
       if (!typeShowcase.contains(event.relatedTarget)) showcaseFocused = false;
