@@ -746,6 +746,10 @@
     typeShowcaseViewport?.addEventListener('pointercancel', finishShowcaseDrag);
 
     typeShowcaseViewport?.addEventListener('wheel', (event) => {
+      // Leave browser/page zoom gestures entirely to the browser. On macOS and
+      // Windows these arrive as modified wheel events and must never be folded
+      // into the horizontal showcase interaction.
+      if (event.ctrlKey || event.metaKey) return;
       if (reducedMotion.matches || typeShowcasePaused) return;
       const horizontalGesture = Math.abs(event.deltaX) > Math.abs(event.deltaY);
       if (horizontalGesture) {

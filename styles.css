@@ -96,7 +96,7 @@ img { display: block; max-width: 100%; }
   width: 100%;
   overflow: hidden;
   cursor: grab;
-  touch-action: pan-y;
+  touch-action: pan-y pinch-zoom;
   user-select: none;
   -webkit-mask-image: linear-gradient(to right, transparent 0, #000 clamp(28px, 5vw, 100px), #000 calc(100% - clamp(28px, 5vw, 100px)), transparent 100%);
   mask-image: linear-gradient(to right, transparent 0, #000 clamp(28px, 5vw, 100px), #000 calc(100% - clamp(28px, 5vw, 100px)), transparent 100%);
@@ -906,7 +906,7 @@ html.reveal-enabled .work-page [data-reveal-group^="work-stage-"].is-retreating:
   isolation: isolate;
   perspective: 1250px;
   cursor: grab;
-  touch-action: pan-y;
+  touch-action: pan-y pinch-zoom;
 }
 .project-24-scatter.is-dragging { cursor: grabbing; }
 .project-24-scatter__orbit {
