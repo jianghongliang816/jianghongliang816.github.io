@@ -117,20 +117,26 @@
   const scatterExtensions = ['png', 'png', 'png', 'jpg', 'jpg', 'png', 'png', 'jpg', 'jpg', 'jpg', 'jpg', 'mp4', 'mp4', 'jpg', 'jpg', 'jpg', 'jpg', 'jpg', 'jpg', 'jpg', 'jpg', 'jpg', 'jpg', 'png', 'png', 'png', 'jpg', 'png', 'mp4', 'jpg', 'png'];
   if (project24Scatter && !project24Scatter.children.length) {
     const orbit = document.createElement('div');
-    const core = document.createElement('div');
     orbit.className = 'project-24-scatter__orbit';
-    core.className = 'project-24-scatter__core';
-    core.setAttribute('aria-hidden', 'true');
-    for (let layer = 0; layer < 3; layer += 1) {
-      const coreImage = document.createElement('img');
-      coreImage.src = '/media/brand/core/chengyuan-flower-alpha.png';
-      coreImage.alt = '';
-      coreImage.decoding = 'async';
-      coreImage.className = `project-24-scatter__core-image project-24-scatter__core-image--${layer + 1}`;
-      core.append(coreImage);
-    }
+    const createCore = (depth, layers) => {
+      const core = document.createElement('div');
+      core.className = `project-24-scatter__core project-24-scatter__core--${depth}`;
+      core.setAttribute('aria-hidden', 'true');
+      for (let layer = 0; layer < layers; layer += 1) {
+        const coreImage = document.createElement('img');
+        coreImage.src = '/media/brand/core/chengyuan-flower-alpha.png';
+        coreImage.alt = '';
+        coreImage.decoding = 'async';
+        coreImage.className = `project-24-scatter__core-image project-24-scatter__core-image--${layer + 1}`;
+        core.append(coreImage);
+      }
+      return core;
+    };
+    const coreBack = createCore('back', 1);
+    const coreFront = createCore('front', 3);
+    project24Scatter.append(coreBack);
     project24Scatter.append(orbit);
-    project24Scatter.append(core);
+    project24Scatter.append(coreFront);
     scatterExtensions.forEach((extension, index) => {
       const number = index + 1;
       const item = document.createElement('button');
