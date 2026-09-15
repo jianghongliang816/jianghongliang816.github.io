@@ -168,6 +168,7 @@
   const project24ScatterOrbit = project24Scatter?.querySelector('.project-24-scatter__orbit');
   const project24ScatterItems = [...(project24Scatter?.querySelectorAll('.project-24-scatter__item') || [])];
   const project24ScatterVideos = [...(project24Scatter?.querySelectorAll('video') || [])];
+  const sphereFocusMode = Boolean(brandScatterStory);
   let project24StoryFrame;
   let brandScatterStoryFrame;
 
@@ -198,13 +199,14 @@
     item.style.setProperty('--sphere-mobile-w', `${48 + (index * 11) % 24}px`);
   });
   const setProject24ScatterSelection = (selectedItem) => {
-    const wasFlat = project24Scatter?.classList.contains('is-flat');
-    if (!selectedItem && wasFlat) {
+    const wasExpanded = project24Scatter?.classList.contains('is-flat') || project24Scatter?.classList.contains('is-focus');
+    if (!selectedItem && wasExpanded) {
       project24Scatter.classList.add('is-collapsing');
       scatterTransitionUntil = performance.now() + 780;
       window.setTimeout(() => project24Scatter?.classList.remove('is-collapsing'), 800);
     }
-    project24Scatter?.classList.toggle('is-flat', Boolean(selectedItem));
+    project24Scatter?.classList.toggle('is-flat', Boolean(selectedItem) && !sphereFocusMode);
+    project24Scatter?.classList.toggle('is-focus', Boolean(selectedItem) && sphereFocusMode);
     project24Scatter?.classList.toggle('has-selection', Boolean(selectedItem));
     project24ScatterItems.forEach((item) => {
       const selected = item === selectedItem;
@@ -242,8 +244,9 @@
     scatterAnimationFrame = undefined;
     if (!project24ScatterOrbit || reducedMotion.matches || (!scatterVisible && !force)) return;
     const isFlat = project24Scatter?.classList.contains('is-flat');
+    const isFocused = project24Scatter?.classList.contains('is-focus');
     const isTransitioning = time < scatterTransitionUntil;
-    if (!scatterDragging && !isFlat && !isTransitioning) {
+    if (!scatterDragging && !isFlat && !isFocused && !isTransitioning) {
       if (Math.abs(scatterVelocityX) + Math.abs(scatterVelocityY) > .015) {
         scatterRotationY += scatterVelocityX;
         scatterRotationX = Math.max(-62, Math.min(62, scatterRotationX + scatterVelocityY));
@@ -274,8 +277,9 @@
         const perspectiveScale = perspective / (perspective - projectedDepth);
         const screenX = rotatedX * radius * perspectiveScale * breath;
         const screenY = -rotatedY * radius * perspectiveScale * breath;
-        const softYaw = rotatedX * 22;
-        const softPitch = rotatedY * 18;
+        const tangentDepth = Math.max(.3, depth + .55);
+        const softYaw = Math.max(-72, Math.min(72, -Math.atan2(rotatedX, tangentDepth) * 180 / Math.PI));
+        const softPitch = Math.max(-58, Math.min(58, Math.atan2(rotatedY, tangentDepth) * 180 / Math.PI));
         const item = project24ScatterItems[index];
         item.style.setProperty('--sphere-live-transform', `translate(-50%, -50%) translate3d(${screenX.toFixed(2)}px, ${screenY.toFixed(2)}px, 0) rotateY(${softYaw.toFixed(2)}deg) rotateX(${softPitch.toFixed(2)}deg) scale(${(perspectiveScale * breath).toFixed(4)})`);
         item.style.setProperty('--sphere-z', String(Math.round((depth + 1) * 100)));
@@ -323,7 +327,7 @@
       project24Scatter.setPointerCapture(event.pointerId);
     });
     project24Scatter.addEventListener('pointermove', (event) => {
-      if (!scatterDragging || project24Scatter.classList.contains('is-flat')) return;
+      if (!scatterDragging || project24Scatter.classList.contains('is-flat') || project24Scatter.classList.contains('is-focus')) return;
       const deltaX = event.clientX - scatterPointerX;
       const deltaY = event.clientY - scatterPointerY;
       const now = performance.now();
@@ -343,7 +347,7 @@
       scatterDragging = false;
       project24Scatter.classList.remove('is-dragging');
       if (project24Scatter.hasPointerCapture(event.pointerId)) project24Scatter.releasePointerCapture(event.pointerId);
-      if (project24Scatter.classList.contains('is-flat')) setProject24ScatterSelection(null);
+      if (project24Scatter.classList.contains('is-flat') || project24Scatter.classList.contains('is-focus')) setProject24ScatterSelection(null);
       else if (!scatterMoved) {
         scatterAutoRotating = !scatterAutoRotating;
         scatterVelocityX = 0;

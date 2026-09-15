@@ -983,6 +983,10 @@ html.reveal-enabled .work-page [data-reveal-group^="work-stage-"].is-retreating:
   opacity: .08;
   transform: translate(-50%, -50%) scale(.78);
 }
+.project-24-scatter.is-focus .project-24-scatter__core {
+  opacity: .08;
+  filter: blur(3px) saturate(.5);
+}
 .project-24-scatter__item {
   position: relative;
   width: 100%;
@@ -1057,6 +1061,22 @@ html.reveal-enabled .work-page [data-reveal-group^="work-stage-"].is-retreating:
 .project-24-scatter.has-selection .project-24-scatter__item:not(.is-selected) {
   opacity: .62 !important;
   pointer-events: auto;
+}
+.brand-page .project-24-scatter.is-focus .project-24-scatter__item:not(.is-selected) {
+  opacity: .16 !important;
+  filter: saturate(.58) blur(.45px);
+  pointer-events: none;
+}
+.brand-page .project-24-scatter.is-focus .project-24-scatter__item.is-selected {
+  left: 50%;
+  top: 50%;
+  width: min(62vw, 820px);
+  opacity: 1 !important;
+  transform: translate(-50%, -50%) translateZ(0) !important;
+  z-index: 520;
+  cursor: zoom-out;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 .project-24-scatter.is-ready.is-flat .project-24-scatter__item.is-selected {
   left: 50%;
