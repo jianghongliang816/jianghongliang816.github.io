@@ -163,6 +163,7 @@
     [16, 70, 10], [29, 66, 14], [43, 73, 8], [56, 67, 12], [70, 74, 9], [83, 68, 13],
     [19, 86, 13], [33, 84, 7], [45, 88, 11], [59, 83, 9], [73, 87, 13], [84, 84, 7],
   ];
+  const project24SpherePoints = [];
   project24ScatterItems.forEach((item, index) => {
     const [x, y, width] = project24ScatterLayout[index];
     const pointIndex = index + .5;
@@ -171,9 +172,7 @@
     const theta = Math.PI * (3 - Math.sqrt(5)) * pointIndex;
     const sphereX = Math.cos(theta) * sphereRadius;
     const sphereZ = Math.sin(theta) * sphereRadius;
-    const longitude = Math.atan2(sphereX, sphereZ);
-    const latitude = Math.asin(sphereY);
-    const radius = 'min(31vw, 300px)';
+    project24SpherePoints.push({ x: sphereX, y: sphereY, z: sphereZ });
     item.style.setProperty('--scatter-x', `${x}%`);
     item.style.setProperty('--scatter-y', `${y}%`);
     item.style.setProperty('--scatter-w', `${width}vw`);
@@ -182,12 +181,16 @@
     item.style.setProperty('--scatter-float-delay', `${-(index % 9) * .37}s`);
     item.style.setProperty('--sphere-w', `${82 + (index * 17) % 48}px`);
     item.style.setProperty('--sphere-mobile-w', `${48 + (index * 11) % 24}px`);
-    item.style.setProperty('--sphere-z', String(Math.round((sphereZ + 1) * 100)));
-    item.style.setProperty('--sphere-transform', `translate(-50%, -50%) translate3d(calc(${sphereX.toFixed(4)} * ${radius}), calc(${-sphereY.toFixed(4)} * ${radius}), calc(${sphereZ.toFixed(4)} * ${radius})) rotateY(${longitude.toFixed(4)}rad) rotateX(${latitude.toFixed(4)}rad)`);
   });
   project24Scatter?.classList.add('is-ready');
 
   const setProject24ScatterSelection = (selectedItem) => {
+    const wasFlat = project24Scatter?.classList.contains('is-flat');
+    if (!selectedItem && wasFlat) {
+      project24Scatter.classList.add('is-collapsing');
+      scatterTransitionUntil = performance.now() + 780;
+      window.setTimeout(() => project24Scatter?.classList.remove('is-collapsing'), 800);
+    }
     project24Scatter?.classList.toggle('is-flat', Boolean(selectedItem));
     project24Scatter?.classList.toggle('has-selection', Boolean(selectedItem));
     project24ScatterItems.forEach((item) => {
@@ -211,6 +214,10 @@
 
   let scatterRotationX = -8;
   let scatterRotationY = 18;
+  let scatterVelocityX = 0;
+  let scatterVelocityY = 0;
+  let scatterLastPointerTime = 0;
+  let scatterTransitionUntil = 0;
   let scatterDragging = false;
   let scatterMoved = false;
   let scatterPointerX = 0;
@@ -218,11 +225,48 @@
   let scatterAutoRotating = true;
   let scatterVisible = false;
   let scatterAnimationFrame;
-  const renderScatterSphere = () => {
+  const renderScatterSphere = (time = performance.now()) => {
     scatterAnimationFrame = undefined;
     if (!project24ScatterOrbit || reducedMotion.matches || !scatterVisible) return;
-    if (scatterAutoRotating && !scatterDragging && !project24Scatter?.classList.contains('is-flat')) scatterRotationY += .055;
-    project24ScatterOrbit.style.transform = `rotateX(${scatterRotationX}deg) rotateY(${scatterRotationY}deg)`;
+    const isFlat = project24Scatter?.classList.contains('is-flat');
+    const isTransitioning = time < scatterTransitionUntil;
+    if (!scatterDragging && !isFlat && !isTransitioning) {
+      if (Math.abs(scatterVelocityX) + Math.abs(scatterVelocityY) > .015) {
+        scatterRotationY += scatterVelocityX;
+        scatterRotationX = Math.max(-62, Math.min(62, scatterRotationX + scatterVelocityY));
+        scatterVelocityX *= .94;
+        scatterVelocityY *= .94;
+      } else if (scatterAutoRotating) {
+        scatterRotationY += .14;
+      }
+    }
+    if (!isFlat) {
+      const angleY = scatterRotationY * Math.PI / 180;
+      const angleX = scatterRotationX * Math.PI / 180;
+      const cosY = Math.cos(angleY);
+      const sinY = Math.sin(angleY);
+      const cosX = Math.cos(angleX);
+      const sinX = Math.sin(angleX);
+      const radius = Math.min(window.innerWidth * .39, window.innerHeight * .38, 400);
+      const breath = 1 + Math.sin(time / 1550) * .012;
+      const perspective = 1120;
+      project24SpherePoints.forEach((point, index) => {
+        const rotatedX = point.x * cosY + point.z * sinY;
+        const rotatedZ = -point.x * sinY + point.z * cosY;
+        const rotatedY = point.y * cosX - rotatedZ * sinX;
+        const depth = point.y * sinX + rotatedZ * cosX;
+        const projectedDepth = depth * radius;
+        const perspectiveScale = perspective / (perspective - projectedDepth);
+        const screenX = rotatedX * radius * perspectiveScale * breath;
+        const screenY = -rotatedY * radius * perspectiveScale * breath;
+        const softYaw = rotatedX * 22;
+        const softPitch = rotatedY * 18;
+        const item = project24ScatterItems[index];
+        item.style.setProperty('--sphere-live-transform', `translate(-50%, -50%) translate3d(${screenX.toFixed(2)}px, ${screenY.toFixed(2)}px, 0) rotateY(${softYaw.toFixed(2)}deg) rotateX(${softPitch.toFixed(2)}deg) scale(${(perspectiveScale * breath).toFixed(4)})`);
+        item.style.setProperty('--sphere-z', String(Math.round((depth + 1) * 100)));
+        item.style.setProperty('--sphere-depth-opacity', String(.34 + (depth + 1) * .33));
+      });
+    }
     scatterAnimationFrame = requestAnimationFrame(renderScatterSphere);
   };
   const requestScatterSphere = () => {
@@ -243,6 +287,9 @@
       scatterMoved = false;
       scatterPointerX = event.clientX;
       scatterPointerY = event.clientY;
+      scatterLastPointerTime = performance.now();
+      scatterVelocityX = 0;
+      scatterVelocityY = 0;
       scatterAutoRotating = false;
       project24Scatter.classList.add('is-dragging');
       project24Scatter.setPointerCapture(event.pointerId);
@@ -251,11 +298,16 @@
       if (!scatterDragging || project24Scatter.classList.contains('is-flat')) return;
       const deltaX = event.clientX - scatterPointerX;
       const deltaY = event.clientY - scatterPointerY;
+      const now = performance.now();
+      const elapsed = Math.max(8, now - scatterLastPointerTime);
       if (Math.abs(deltaX) + Math.abs(deltaY) > 3) scatterMoved = true;
       scatterRotationY += deltaX * .22;
       scatterRotationX = Math.max(-62, Math.min(62, scatterRotationX - deltaY * .18));
+      scatterVelocityX = (deltaX * .22) * (16.67 / elapsed);
+      scatterVelocityY = (-deltaY * .18) * (16.67 / elapsed);
       scatterPointerX = event.clientX;
       scatterPointerY = event.clientY;
+      scatterLastPointerTime = now;
       requestScatterSphere();
     });
     project24Scatter.addEventListener('pointerup', (event) => {
@@ -264,7 +316,13 @@
       project24Scatter.classList.remove('is-dragging');
       if (project24Scatter.hasPointerCapture(event.pointerId)) project24Scatter.releasePointerCapture(event.pointerId);
       if (project24Scatter.classList.contains('is-flat')) setProject24ScatterSelection(null);
-      else if (!scatterMoved) scatterAutoRotating = !scatterAutoRotating;
+      else if (!scatterMoved) {
+        scatterAutoRotating = !scatterAutoRotating;
+        scatterVelocityX = 0;
+        scatterVelocityY = 0;
+      } else {
+        scatterAutoRotating = true;
+      }
       requestScatterSphere();
     });
   }

@@ -884,7 +884,7 @@ html.reveal-enabled .work-page [data-reveal-group^="work-stage-"].is-retreating:
   overflow: hidden;
   background: #fff;
   isolation: isolate;
-  perspective: 1100px;
+  perspective: 1250px;
   cursor: grab;
   touch-action: pan-y;
 }
@@ -906,16 +906,10 @@ html.reveal-enabled .work-page [data-reveal-group^="work-stage-"].is-retreating:
 .project-24-scatter.is-flat .project-24-scatter__hint { opacity: .2; }
 .project-24-scatter__orbit {
   position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 0;
-  height: 0;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   transform-style: preserve-3d;
-  will-change: transform;
-}
-.project-24-scatter.is-flat .project-24-scatter__orbit {
-  transform: none !important;
-  transition: transform 720ms cubic-bezier(.16, 1, .3, 1);
 }
 .project-24-scatter__item {
   position: relative;
@@ -944,14 +938,17 @@ html.reveal-enabled .work-page [data-reveal-group^="work-stage-"].is-retreating:
 }
 .project-24-scatter.is-ready:not(.is-flat) .project-24-scatter__item {
   position: absolute;
-  left: 0;
-  top: 0;
+  left: 50%;
+  top: 50%;
   width: var(--sphere-w, 104px);
-  opacity: var(--scatter-item-opacity, 0);
-  transform: var(--sphere-transform) scale(var(--scatter-item-scale, .72));
+  opacity: calc(var(--scatter-item-opacity, 0) * var(--sphere-depth-opacity, 1));
+  transform: var(--sphere-live-transform) scale(var(--scatter-item-scale, .72));
   transform-origin: 50% 50%;
   z-index: var(--sphere-z, 1);
-  backface-visibility: hidden;
+  backface-visibility: visible;
+  transition: opacity 360ms cubic-bezier(.16, 1, .3, 1), width 760ms cubic-bezier(.16, 1, .3, 1);
+}
+.project-24-scatter.is-collapsing .project-24-scatter__item {
   transition: opacity 360ms cubic-bezier(.16, 1, .3, 1), transform 760ms cubic-bezier(.16, 1, .3, 1), width 760ms cubic-bezier(.16, 1, .3, 1);
 }
 .project-24-scatter.is-ready.is-flat .project-24-scatter__item {
