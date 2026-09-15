@@ -277,8 +277,8 @@
         const perspectiveScale = perspective / (perspective - projectedDepth);
         const screenX = rotatedX * radius * perspectiveScale * breath;
         const screenY = -rotatedY * radius * perspectiveScale * breath;
-        const softYaw = rotatedX * 22;
-        const softPitch = rotatedY * 18;
+        const softYaw = 0;
+        const softPitch = 0;
         const item = project24ScatterItems[index];
         item.style.setProperty('--sphere-live-transform', `translate(-50%, -50%) translate3d(${screenX.toFixed(2)}px, ${screenY.toFixed(2)}px, 0) rotateY(${softYaw.toFixed(2)}deg) rotateX(${softPitch.toFixed(2)}deg) scale(${(perspectiveScale * breath).toFixed(4)})`);
         item.style.setProperty('--sphere-z', String(Math.round((depth + 1) * 100)));
