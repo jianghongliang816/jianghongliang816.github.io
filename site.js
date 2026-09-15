@@ -110,7 +110,49 @@
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const project24Story = document.querySelector('[data-project-24-story]');
   const project24StoryFrames = [...(project24Story?.querySelectorAll('.project-24-story__frame') || [])];
+  const project24Scatter = project24Story?.querySelector('[data-project-24-scatter]');
+  const project24ScatterItems = [...(project24Scatter?.querySelectorAll('.project-24-scatter__item') || [])];
+  const project24ScatterVideos = [...(project24Scatter?.querySelectorAll('video') || [])];
   let project24StoryFrame;
+
+  const project24ScatterLayout = [
+    [18, 12, 10], [32, 10, 7], [45, 15, 11], [59, 11, 8], [73, 15, 12], [84, 12, 8],
+    [15, 30, 12], [27, 28, 7], [38, 34, 10], [50, 27, 13], [63, 34, 9], [75, 28, 12], [85, 34, 7],
+    [19, 49, 15], [34, 54, 11], [47, 47, 8], [59, 54, 14], [73, 47, 10], [84, 54, 12],
+    [16, 70, 10], [29, 66, 14], [43, 73, 8], [56, 67, 12], [70, 74, 9], [83, 68, 13],
+    [19, 86, 13], [33, 84, 7], [45, 88, 11], [59, 83, 9], [73, 87, 13], [84, 84, 7],
+  ];
+  project24ScatterItems.forEach((item, index) => {
+    const [x, y, width] = project24ScatterLayout[index];
+    item.style.setProperty('--scatter-x', `${x}%`);
+    item.style.setProperty('--scatter-y', `${y}%`);
+    item.style.setProperty('--scatter-w', `${width}vw`);
+    item.style.setProperty('--scatter-z', String(1 + (index * 7) % 9));
+    item.style.setProperty('--scatter-float-duration', `${6.2 + (index % 7) * .45}s`);
+    item.style.setProperty('--scatter-float-delay', `${-(index % 9) * .37}s`);
+  });
+  project24Scatter?.classList.add('is-ready');
+
+  const setProject24ScatterSelection = (selectedItem) => {
+    project24Scatter?.classList.toggle('has-selection', Boolean(selectedItem));
+    project24ScatterItems.forEach((item) => {
+      const selected = item === selectedItem;
+      item.classList.toggle('is-selected', selected);
+      item.setAttribute('aria-pressed', String(selected));
+    });
+  };
+  project24ScatterItems.forEach((item) => {
+    item.addEventListener('click', (event) => {
+      event.stopPropagation();
+      setProject24ScatterSelection(item.classList.contains('is-selected') ? null : item);
+    });
+  });
+  project24Scatter?.addEventListener('click', (event) => {
+    if (event.target === project24Scatter) setProject24ScatterSelection(null);
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') setProject24ScatterSelection(null);
+  });
 
   const clamp01 = (value) => Math.max(0, Math.min(1, value));
   const smoothStep = (value) => {
@@ -127,6 +169,11 @@
         frame.style.removeProperty('transform');
         frame.style.removeProperty('z-index');
       });
+      project24ScatterItems.forEach((item) => {
+        item.tabIndex = 0;
+        item.style.removeProperty('--scatter-item-opacity');
+        item.style.removeProperty('--scatter-item-scale');
+      });
       return;
     }
 
@@ -134,6 +181,8 @@
     const travel = Math.max(1, project24Story.offsetHeight - window.innerHeight);
     const progress = clamp01((window.scrollY - storyTop) / travel);
     const position = progress * (project24StoryFrames.length - 1);
+    const scatterIndex = project24StoryFrames.length - 1;
+    const scatterProgress = clamp01(position - (scatterIndex - 1));
 
     project24StoryFrames.forEach((frame, index) => {
       const distance = index - position;
@@ -155,6 +204,22 @@
       frame.style.opacity = opacity.toFixed(4);
       frame.style.transform = `scale(${scale.toFixed(4)})`;
       frame.style.zIndex = String(index + 1);
+      frame.style.pointerEvents = index === scatterIndex && scatterProgress > .55 ? 'auto' : 'none';
+    });
+
+    project24ScatterItems.forEach((item, index) => {
+      const delay = (index % 7) * .012;
+      const itemProgress = clamp01((scatterProgress - .025 - delay) / .48);
+      const itemEase = 1 - Math.pow(1 - itemProgress, 4);
+      item.style.setProperty('--scatter-item-opacity', smoothStep(itemProgress).toFixed(4));
+      item.style.setProperty('--scatter-item-scale', (.62 + .38 * itemEase).toFixed(4));
+      item.tabIndex = scatterProgress > .72 ? 0 : -1;
+    });
+
+    const scatterIsVisible = scatterProgress > .38;
+    project24ScatterVideos.forEach((video) => {
+      if (scatterIsVisible && document.visibilityState === 'visible') video.play().catch(() => {});
+      else video.pause();
     });
   };
   const requestProject24Story = () => {
@@ -164,6 +229,7 @@
   if (project24Story) {
     window.addEventListener('scroll', requestProject24Story, { passive: true });
     window.addEventListener('resize', requestProject24Story, { passive: true });
+    document.addEventListener('visibilitychange', requestProject24Story);
     syncProject24Story();
   }
   let motionPaused = reducedMotion.matches;
