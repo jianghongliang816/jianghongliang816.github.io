@@ -117,12 +117,8 @@
   const scatterExtensions = ['png', 'png', 'png', 'jpg', 'jpg', 'png', 'png', 'jpg', 'jpg', 'jpg', 'jpg', 'mp4', 'mp4', 'jpg', 'jpg', 'jpg', 'jpg', 'jpg', 'jpg', 'jpg', 'jpg', 'jpg', 'jpg', 'png', 'png', 'png', 'jpg', 'png', 'mp4', 'jpg', 'png'];
   if (project24Scatter && !project24Scatter.children.length) {
     const orbit = document.createElement('div');
-    const hint = document.createElement('p');
     orbit.className = 'project-24-scatter__orbit';
-    hint.className = 'project-24-scatter__hint';
-    hint.textContent = '拖动旋转 · 点击素材展开 · 点击空白收起或暂停';
     project24Scatter.append(orbit);
-    project24Scatter.append(hint);
     scatterExtensions.forEach((extension, index) => {
       const number = index + 1;
       const item = document.createElement('button');
@@ -391,7 +387,7 @@
 
   const syncBrandScatterStory = () => {
     brandScatterStoryFrame = undefined;
-    if (!brandScatterStory || brandScatterFrames.length !== 2) return;
+    if (!brandScatterStory || brandScatterFrames.length !== 3) return;
     if (reducedMotion.matches) {
       brandScatterFrames.forEach((frame) => {
         frame.style.removeProperty('opacity');
@@ -407,24 +403,32 @@
     const storyTop = window.scrollY + brandScatterStory.getBoundingClientRect().top;
     const travel = Math.max(1, brandScatterStory.offsetHeight - window.innerHeight);
     const progress = clamp01((window.scrollY - storyTop) / travel);
-    const exitEase = 1 - Math.pow(1 - progress, 4);
-    const enterEase = 1 - Math.pow(1 - progress, 5);
-    brandScatterFrames[0].style.opacity = (1 - smoothStep((progress - .04) / .72)).toFixed(4);
-    brandScatterFrames[0].style.transform = `scale(${(1 - .48 * exitEase).toFixed(4)})`;
+    const sphereProgress = clamp01(progress / .58);
+    const introExitEase = 1 - Math.pow(1 - sphereProgress, 4);
+    const sphereEnterEase = 1 - Math.pow(1 - sphereProgress, 5);
+    const sphereExit = clamp01((progress - .80) / .16);
+    const sphereExitEase = 1 - Math.pow(1 - sphereExit, 5);
+    const videoEnter = clamp01((progress - .80) / .15);
+    const videoEnterEase = 1 - Math.pow(1 - videoEnter, 5);
+    brandScatterFrames[0].style.opacity = (1 - smoothStep((sphereProgress - .04) / .72)).toFixed(4);
+    brandScatterFrames[0].style.transform = `scale(${(1 - .48 * introExitEase).toFixed(4)})`;
     brandScatterFrames[0].style.pointerEvents = 'none';
-    brandScatterFrames[1].style.opacity = smoothStep((progress - .025) / .54).toFixed(4);
-    brandScatterFrames[1].style.transform = `scale(${(.7 + .3 * enterEase).toFixed(4)})`;
-    brandScatterFrames[1].style.pointerEvents = progress > .55 ? 'auto' : 'none';
+    brandScatterFrames[1].style.opacity = (smoothStep((sphereProgress - .025) / .54) * (1 - smoothStep(sphereExit))).toFixed(4);
+    brandScatterFrames[1].style.transform = `scale(${((.7 + .3 * sphereEnterEase) * (1 + 1.35 * sphereExitEase)).toFixed(4)})`;
+    brandScatterFrames[1].style.pointerEvents = sphereProgress > .55 && sphereExit < .08 ? 'auto' : 'none';
+    brandScatterFrames[2].style.opacity = smoothStep((videoEnter - .015) / .58).toFixed(4);
+    brandScatterFrames[2].style.transform = `scale(${(.62 + .38 * videoEnterEase).toFixed(4)})`;
+    brandScatterFrames[2].style.pointerEvents = videoEnter > .72 ? 'auto' : 'none';
     project24ScatterItems.forEach((item, index) => {
       const delay = (index % 7) * .012;
-      const itemProgress = clamp01((progress - .025 - delay) / .48);
+      const itemProgress = clamp01((sphereProgress - .025 - delay) / .48);
       const itemEase = 1 - Math.pow(1 - itemProgress, 4);
       item.style.setProperty('--scatter-item-opacity', smoothStep(itemProgress).toFixed(4));
       item.style.setProperty('--scatter-item-scale', (.62 + .38 * itemEase).toFixed(4));
-      item.tabIndex = progress > .72 ? 0 : -1;
+      item.tabIndex = sphereProgress > .72 && sphereExit < .08 ? 0 : -1;
     });
     project24ScatterVideos.forEach((video) => {
-      if (progress > .38 && document.visibilityState === 'visible') video.play().catch(() => {});
+      if (sphereProgress > .38 && sphereExit < .75 && document.visibilityState === 'visible') video.play().catch(() => {});
       else video.pause();
     });
   };

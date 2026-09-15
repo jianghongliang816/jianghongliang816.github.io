@@ -223,6 +223,20 @@ img { display: block; max-width: 100%; }
   margin: auto;
   object-fit: contain;
 }
+.brand-scatter-story__video-board {
+  position: absolute;
+  inset: 0;
+  width: min(78%, 1600px);
+  height: 100%;
+  margin: auto;
+}
+.brand-scatter-story__video-board > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
 .brand-video {
   position: absolute;
   left: 35.98%;
@@ -889,21 +903,6 @@ html.reveal-enabled .work-page [data-reveal-group^="work-stage-"].is-retreating:
   touch-action: pan-y;
 }
 .project-24-scatter.is-dragging { cursor: grabbing; }
-.project-24-scatter__hint {
-  position: absolute;
-  left: 50%;
-  bottom: clamp(22px, 4vh, 42px);
-  z-index: 80;
-  margin: 0;
-  color: rgba(16, 16, 18, .42);
-  font-size: clamp(10px, .82vw, 13px);
-  letter-spacing: .08em;
-  transform: translateX(-50%);
-  pointer-events: none;
-  white-space: nowrap;
-  transition: opacity 260ms ease;
-}
-.project-24-scatter.is-flat .project-24-scatter__hint { opacity: .2; }
 .project-24-scatter__orbit {
   position: absolute;
   inset: 0;
@@ -1543,6 +1542,7 @@ html.reveal-enabled .work-page [data-reveal-group^="work-stage-"].is-retreating:
   .brand-scatter-story__stage { position: relative; height: auto; overflow: visible; }
   .brand-scatter-story__frame { position: relative; height: auto; opacity: 1; transform: none; }
   .brand-scatter-story__frame--intro > img { position: relative; width: 100%; height: auto; }
+  .brand-scatter-story__video-board { position: relative; width: 100%; height: auto; aspect-ratio: 5692 / 3229; }
   .project-24-story__frame--scatter { display: block; }
   .project-24-scatter {
     position: relative;
@@ -1555,7 +1555,6 @@ html.reveal-enabled .work-page [data-reveal-group^="work-stage-"].is-retreating:
     cursor: default;
   }
   .project-24-scatter__orbit { display: contents; }
-  .project-24-scatter__hint { display: none; }
   .project-24-scatter.is-ready .project-24-scatter__item,
   .project-24-scatter.is-ready .project-24-scatter__item.is-selected {
     position: relative;
