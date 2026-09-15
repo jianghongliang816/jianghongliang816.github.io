@@ -795,9 +795,9 @@ html.reveal-enabled .work-page [data-reveal-group^="work-stage-"].is-retreating:
   object-fit: contain;
 }
 .detail-page--project-24 .project-media-stack--project-24 {
-  width: min(1960px, calc(100vw - 96px));
+  width: min(1200px, calc(100vw - 96px));
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
+  gap: clamp(32px, 4.7vw, 96px);
   align-items: start;
   padding-top: 28px;
   padding-bottom: clamp(80px, 10vw, 170px);
