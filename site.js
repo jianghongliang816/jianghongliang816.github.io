@@ -110,10 +110,43 @@
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const project24Story = document.querySelector('[data-project-24-story]');
   const project24StoryFrames = [...(project24Story?.querySelectorAll('.project-24-story__frame') || [])];
-  const project24Scatter = project24Story?.querySelector('[data-project-24-scatter]');
+  const brandScatterStory = document.querySelector('[data-brand-scatter-story]');
+  const brandScatterFrames = [...(brandScatterStory?.querySelectorAll('.brand-scatter-story__frame') || [])];
+  const project24Scatter = document.querySelector('[data-project-24-scatter]');
+  const scatterVideoIndexes = new Set([12, 13, 29]);
+  const scatterExtensions = ['png', 'png', 'png', 'jpg', 'jpg', 'png', 'png', 'jpg', 'jpg', 'jpg', 'jpg', 'mp4', 'mp4', 'jpg', 'jpg', 'jpg', 'jpg', 'jpg', 'jpg', 'jpg', 'jpg', 'jpg', 'jpg', 'png', 'png', 'png', 'jpg', 'png', 'mp4', 'jpg', 'png'];
+  if (project24Scatter && !project24Scatter.children.length) {
+    scatterExtensions.forEach((extension, index) => {
+      const number = index + 1;
+      const item = document.createElement('button');
+      const float = document.createElement('span');
+      const media = document.createElement(scatterVideoIndexes.has(number) ? 'video' : 'img');
+      item.className = 'project-24-scatter__item';
+      item.type = 'button';
+      item.setAttribute('aria-label', `放大查看品牌项目${scatterVideoIndexes.has(number) ? '视频' : '素材'} ${number}`);
+      item.setAttribute('aria-pressed', 'false');
+      float.className = 'project-24-scatter__float';
+      media.src = `/media/project-24/scatter/scatter-${String(number).padStart(2, '0')}.${extension}`;
+      if (media instanceof HTMLVideoElement) {
+        media.muted = true;
+        media.loop = true;
+        media.playsInline = true;
+        media.preload = 'metadata';
+        media.setAttribute('aria-label', `乘愿而归品牌项目视频 ${number}`);
+      } else {
+        media.alt = `乘愿而归品牌项目素材 ${number}`;
+        media.loading = 'lazy';
+        media.decoding = 'async';
+      }
+      float.append(media);
+      item.append(float);
+      project24Scatter.append(item);
+    });
+  }
   const project24ScatterItems = [...(project24Scatter?.querySelectorAll('.project-24-scatter__item') || [])];
   const project24ScatterVideos = [...(project24Scatter?.querySelectorAll('video') || [])];
   let project24StoryFrame;
+  let brandScatterStoryFrame;
 
   const project24ScatterLayout = [
     [18, 12, 10], [32, 10, 7], [45, 15, 11], [59, 11, 8], [73, 15, 12], [84, 12, 8],
@@ -181,8 +214,6 @@
     const travel = Math.max(1, project24Story.offsetHeight - window.innerHeight);
     const progress = clamp01((window.scrollY - storyTop) / travel);
     const position = progress * (project24StoryFrames.length - 1);
-    const scatterIndex = project24StoryFrames.length - 1;
-    const scatterProgress = clamp01(position - (scatterIndex - 1));
 
     project24StoryFrames.forEach((frame, index) => {
       const distance = index - position;
@@ -204,22 +235,7 @@
       frame.style.opacity = opacity.toFixed(4);
       frame.style.transform = `scale(${scale.toFixed(4)})`;
       frame.style.zIndex = String(index + 1);
-      frame.style.pointerEvents = index === scatterIndex && scatterProgress > .55 ? 'auto' : 'none';
-    });
-
-    project24ScatterItems.forEach((item, index) => {
-      const delay = (index % 7) * .012;
-      const itemProgress = clamp01((scatterProgress - .025 - delay) / .48);
-      const itemEase = 1 - Math.pow(1 - itemProgress, 4);
-      item.style.setProperty('--scatter-item-opacity', smoothStep(itemProgress).toFixed(4));
-      item.style.setProperty('--scatter-item-scale', (.62 + .38 * itemEase).toFixed(4));
-      item.tabIndex = scatterProgress > .72 ? 0 : -1;
-    });
-
-    const scatterIsVisible = scatterProgress > .38;
-    project24ScatterVideos.forEach((video) => {
-      if (scatterIsVisible && document.visibilityState === 'visible') video.play().catch(() => {});
-      else video.pause();
+      frame.style.pointerEvents = 'none';
     });
   };
   const requestProject24Story = () => {
@@ -231,6 +247,56 @@
     window.addEventListener('resize', requestProject24Story, { passive: true });
     document.addEventListener('visibilitychange', requestProject24Story);
     syncProject24Story();
+  }
+
+  const syncBrandScatterStory = () => {
+    brandScatterStoryFrame = undefined;
+    if (!brandScatterStory || brandScatterFrames.length !== 2) return;
+    if (reducedMotion.matches) {
+      brandScatterFrames.forEach((frame) => {
+        frame.style.removeProperty('opacity');
+        frame.style.removeProperty('transform');
+      });
+      project24ScatterItems.forEach((item) => {
+        item.tabIndex = 0;
+        item.style.removeProperty('--scatter-item-opacity');
+        item.style.removeProperty('--scatter-item-scale');
+      });
+      return;
+    }
+    const storyTop = window.scrollY + brandScatterStory.getBoundingClientRect().top;
+    const travel = Math.max(1, brandScatterStory.offsetHeight - window.innerHeight);
+    const progress = clamp01((window.scrollY - storyTop) / travel);
+    const exitEase = 1 - Math.pow(1 - progress, 4);
+    const enterEase = 1 - Math.pow(1 - progress, 5);
+    brandScatterFrames[0].style.opacity = (1 - smoothStep((progress - .04) / .72)).toFixed(4);
+    brandScatterFrames[0].style.transform = `scale(${(1 - .48 * exitEase).toFixed(4)})`;
+    brandScatterFrames[0].style.pointerEvents = 'none';
+    brandScatterFrames[1].style.opacity = smoothStep((progress - .025) / .54).toFixed(4);
+    brandScatterFrames[1].style.transform = `scale(${(.7 + .3 * enterEase).toFixed(4)})`;
+    brandScatterFrames[1].style.pointerEvents = progress > .55 ? 'auto' : 'none';
+    project24ScatterItems.forEach((item, index) => {
+      const delay = (index % 7) * .012;
+      const itemProgress = clamp01((progress - .025 - delay) / .48);
+      const itemEase = 1 - Math.pow(1 - itemProgress, 4);
+      item.style.setProperty('--scatter-item-opacity', smoothStep(itemProgress).toFixed(4));
+      item.style.setProperty('--scatter-item-scale', (.62 + .38 * itemEase).toFixed(4));
+      item.tabIndex = progress > .72 ? 0 : -1;
+    });
+    project24ScatterVideos.forEach((video) => {
+      if (progress > .38 && document.visibilityState === 'visible') video.play().catch(() => {});
+      else video.pause();
+    });
+  };
+  const requestBrandScatterStory = () => {
+    if (brandScatterStoryFrame) return;
+    brandScatterStoryFrame = requestAnimationFrame(syncBrandScatterStory);
+  };
+  if (brandScatterStory) {
+    window.addEventListener('scroll', requestBrandScatterStory, { passive: true });
+    window.addEventListener('resize', requestBrandScatterStory, { passive: true });
+    document.addEventListener('visibilitychange', requestBrandScatterStory);
+    syncBrandScatterStory();
   }
   let motionPaused = reducedMotion.matches;
   const typeShowcase = document.querySelector('[data-type-showcase]');
