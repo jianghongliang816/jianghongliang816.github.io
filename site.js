@@ -116,6 +116,13 @@
   const scatterVideoIndexes = new Set([12, 13, 29]);
   const scatterExtensions = ['png', 'png', 'png', 'jpg', 'jpg', 'png', 'png', 'jpg', 'jpg', 'jpg', 'jpg', 'mp4', 'mp4', 'jpg', 'jpg', 'jpg', 'jpg', 'jpg', 'jpg', 'jpg', 'jpg', 'jpg', 'jpg', 'png', 'png', 'png', 'jpg', 'png', 'mp4', 'jpg', 'png'];
   if (project24Scatter && !project24Scatter.children.length) {
+    const orbit = document.createElement('div');
+    const hint = document.createElement('p');
+    orbit.className = 'project-24-scatter__orbit';
+    hint.className = 'project-24-scatter__hint';
+    hint.textContent = '拖动旋转 · 点击素材展开 · 点击空白收起或暂停';
+    project24Scatter.append(orbit);
+    project24Scatter.append(hint);
     scatterExtensions.forEach((extension, index) => {
       const number = index + 1;
       const item = document.createElement('button');
@@ -140,9 +147,10 @@
       }
       float.append(media);
       item.append(float);
-      project24Scatter.append(item);
+      orbit.append(item);
     });
   }
+  const project24ScatterOrbit = project24Scatter?.querySelector('.project-24-scatter__orbit');
   const project24ScatterItems = [...(project24Scatter?.querySelectorAll('.project-24-scatter__item') || [])];
   const project24ScatterVideos = [...(project24Scatter?.querySelectorAll('video') || [])];
   let project24StoryFrame;
@@ -157,16 +165,30 @@
   ];
   project24ScatterItems.forEach((item, index) => {
     const [x, y, width] = project24ScatterLayout[index];
+    const pointIndex = index + .5;
+    const sphereY = 1 - (2 * pointIndex) / project24ScatterItems.length;
+    const sphereRadius = Math.sqrt(1 - sphereY * sphereY);
+    const theta = Math.PI * (3 - Math.sqrt(5)) * pointIndex;
+    const sphereX = Math.cos(theta) * sphereRadius;
+    const sphereZ = Math.sin(theta) * sphereRadius;
+    const longitude = Math.atan2(sphereX, sphereZ);
+    const latitude = Math.asin(sphereY);
+    const radius = 'min(31vw, 300px)';
     item.style.setProperty('--scatter-x', `${x}%`);
     item.style.setProperty('--scatter-y', `${y}%`);
     item.style.setProperty('--scatter-w', `${width}vw`);
     item.style.setProperty('--scatter-z', String(1 + (index * 7) % 9));
     item.style.setProperty('--scatter-float-duration', `${6.2 + (index % 7) * .45}s`);
     item.style.setProperty('--scatter-float-delay', `${-(index % 9) * .37}s`);
+    item.style.setProperty('--sphere-w', `${82 + (index * 17) % 48}px`);
+    item.style.setProperty('--sphere-mobile-w', `${48 + (index * 11) % 24}px`);
+    item.style.setProperty('--sphere-z', String(Math.round((sphereZ + 1) * 100)));
+    item.style.setProperty('--sphere-transform', `translate(-50%, -50%) translate3d(calc(${sphereX.toFixed(4)} * ${radius}), calc(${-sphereY.toFixed(4)} * ${radius}), calc(${sphereZ.toFixed(4)} * ${radius})) rotateY(${longitude.toFixed(4)}rad) rotateX(${latitude.toFixed(4)}rad)`);
   });
   project24Scatter?.classList.add('is-ready');
 
   const setProject24ScatterSelection = (selectedItem) => {
+    project24Scatter?.classList.toggle('is-flat', Boolean(selectedItem));
     project24Scatter?.classList.toggle('has-selection', Boolean(selectedItem));
     project24ScatterItems.forEach((item) => {
       const selected = item === selectedItem;
@@ -186,6 +208,66 @@
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') setProject24ScatterSelection(null);
   });
+
+  let scatterRotationX = -8;
+  let scatterRotationY = 18;
+  let scatterDragging = false;
+  let scatterMoved = false;
+  let scatterPointerX = 0;
+  let scatterPointerY = 0;
+  let scatterAutoRotating = true;
+  let scatterVisible = false;
+  let scatterAnimationFrame;
+  const renderScatterSphere = () => {
+    scatterAnimationFrame = undefined;
+    if (!project24ScatterOrbit || reducedMotion.matches || !scatterVisible) return;
+    if (scatterAutoRotating && !scatterDragging && !project24Scatter?.classList.contains('is-flat')) scatterRotationY += .055;
+    project24ScatterOrbit.style.transform = `rotateX(${scatterRotationX}deg) rotateY(${scatterRotationY}deg)`;
+    scatterAnimationFrame = requestAnimationFrame(renderScatterSphere);
+  };
+  const requestScatterSphere = () => {
+    if (!scatterAnimationFrame && scatterVisible) scatterAnimationFrame = requestAnimationFrame(renderScatterSphere);
+  };
+  if (project24Scatter) {
+    const scatterObserver = new IntersectionObserver(([entry]) => {
+      scatterVisible = entry.isIntersecting;
+      project24ScatterVideos.forEach((video) => {
+        if (!scatterVisible) video.pause();
+      });
+      requestScatterSphere();
+    }, { threshold: .08 });
+    scatterObserver.observe(project24Scatter);
+    project24Scatter.addEventListener('pointerdown', (event) => {
+      if (event.target.closest('.project-24-scatter__item')) return;
+      scatterDragging = true;
+      scatterMoved = false;
+      scatterPointerX = event.clientX;
+      scatterPointerY = event.clientY;
+      scatterAutoRotating = false;
+      project24Scatter.classList.add('is-dragging');
+      project24Scatter.setPointerCapture(event.pointerId);
+    });
+    project24Scatter.addEventListener('pointermove', (event) => {
+      if (!scatterDragging || project24Scatter.classList.contains('is-flat')) return;
+      const deltaX = event.clientX - scatterPointerX;
+      const deltaY = event.clientY - scatterPointerY;
+      if (Math.abs(deltaX) + Math.abs(deltaY) > 3) scatterMoved = true;
+      scatterRotationY += deltaX * .22;
+      scatterRotationX = Math.max(-62, Math.min(62, scatterRotationX - deltaY * .18));
+      scatterPointerX = event.clientX;
+      scatterPointerY = event.clientY;
+      requestScatterSphere();
+    });
+    project24Scatter.addEventListener('pointerup', (event) => {
+      if (!scatterDragging) return;
+      scatterDragging = false;
+      project24Scatter.classList.remove('is-dragging');
+      if (project24Scatter.hasPointerCapture(event.pointerId)) project24Scatter.releasePointerCapture(event.pointerId);
+      if (project24Scatter.classList.contains('is-flat')) setProject24ScatterSelection(null);
+      else if (!scatterMoved) scatterAutoRotating = !scatterAutoRotating;
+      requestScatterSphere();
+    });
+  }
 
   const clamp01 = (value) => Math.max(0, Math.min(1, value));
   const smoothStep = (value) => {
