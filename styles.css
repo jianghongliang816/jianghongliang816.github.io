@@ -909,7 +909,11 @@ html.reveal-enabled .work-page [data-reveal-group^="work-stage-"].is-retreating:
   width: 100%;
   height: 100%;
   transform-style: preserve-3d;
+  opacity: 0;
+  will-change: opacity;
+  transition: opacity 520ms cubic-bezier(.22, 1, .36, 1);
 }
+.project-24-scatter.is-initialized .project-24-scatter__orbit { opacity: 1; }
 .project-24-scatter__core {
   --project-core-image: url('media/brand/core/chengyuan-flower-alpha.png');
   position: absolute;
@@ -1002,6 +1006,10 @@ html.reveal-enabled .work-page [data-reveal-group^="work-stage-"].is-retreating:
   max-height: 72vh;
   object-fit: contain;
   background: transparent;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  transform: translateZ(.01px);
+  will-change: transform;
   transition: transform 620ms cubic-bezier(.16, 1, .3, 1), opacity 420ms cubic-bezier(.16, 1, .3, 1);
 }
 .project-24-scatter.is-ready:not(.is-flat) .project-24-scatter__item {
@@ -1013,10 +1021,13 @@ html.reveal-enabled .work-page [data-reveal-group^="work-stage-"].is-retreating:
   transform: var(--sphere-live-transform) scale(var(--scatter-item-scale, .72));
   transform-origin: 50% 50%;
   z-index: var(--sphere-z, 1);
-  backface-visibility: visible;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
+  will-change: transform, opacity;
   transition: opacity 360ms cubic-bezier(.16, 1, .3, 1), width 760ms cubic-bezier(.16, 1, .3, 1);
 }
-.project-24-scatter.is-ready:not(.is-flat) .project-24-scatter__item.is-sphere-front {
+.project-24-scatter.is-ready:not(.is-flat) .project-24-scatter__item.is-core-occluder {
   -webkit-backdrop-filter: blur(7px) saturate(.5) opacity(.68);
   backdrop-filter: blur(7px) saturate(.5) opacity(.68);
 }

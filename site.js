@@ -156,8 +156,9 @@
         media.setAttribute('aria-label', `乘愿而归品牌项目视频 ${number}`);
       } else {
         media.alt = `乘愿而归品牌项目素材 ${number}`;
-        media.loading = 'lazy';
+        media.loading = 'eager';
         media.decoding = 'async';
+        media.fetchPriority = 'low';
       }
       float.append(media);
       item.append(float);
@@ -196,8 +197,6 @@
     item.style.setProperty('--sphere-w', `${82 + (index * 17) % 48}px`);
     item.style.setProperty('--sphere-mobile-w', `${48 + (index * 11) % 24}px`);
   });
-  project24Scatter?.classList.add('is-ready');
-
   const setProject24ScatterSelection = (selectedItem) => {
     const wasFlat = project24Scatter?.classList.contains('is-flat');
     if (!selectedItem && wasFlat) {
@@ -239,9 +238,9 @@
   let scatterAutoRotating = true;
   let scatterVisible = false;
   let scatterAnimationFrame;
-  const renderScatterSphere = (time = performance.now()) => {
+  const renderScatterSphere = (time = performance.now(), force = false) => {
     scatterAnimationFrame = undefined;
-    if (!project24ScatterOrbit || reducedMotion.matches || !scatterVisible) return;
+    if (!project24ScatterOrbit || reducedMotion.matches || (!scatterVisible && !force)) return;
     const isFlat = project24Scatter?.classList.contains('is-flat');
     const isTransitioning = time < scatterTransitionUntil;
     if (!scatterDragging && !isFlat && !isTransitioning) {
@@ -262,6 +261,8 @@
       const cosX = Math.cos(angleX);
       const sinX = Math.sin(angleX);
       const radius = Math.min(window.innerWidth * .39, window.innerHeight * .38, 400);
+      const coreWidth = Math.min(370, Math.max(240, window.innerWidth * .23));
+      const coreHeight = coreWidth * 2171 / 1907;
       const breath = 1 + Math.sin(time / 1550) * .012;
       const perspective = 1120;
       project24SpherePoints.forEach((point, index) => {
@@ -279,14 +280,26 @@
         item.style.setProperty('--sphere-live-transform', `translate(-50%, -50%) translate3d(${screenX.toFixed(2)}px, ${screenY.toFixed(2)}px, 0) rotateY(${softYaw.toFixed(2)}deg) rotateX(${softPitch.toFixed(2)}deg) scale(${(perspectiveScale * breath).toFixed(4)})`);
         item.style.setProperty('--sphere-z', String(Math.round((depth + 1) * 100)));
         item.style.setProperty('--sphere-depth-opacity', String(.34 + (depth + 1) * .33));
-        item.classList.toggle('is-sphere-front', depth > 0);
+        if (depth > .08) item.classList.add('is-sphere-front');
+        else if (depth < -.08) item.classList.remove('is-sphere-front');
+        const itemWidth = (82 + (index * 17) % 48) * perspectiveScale;
+        const overlapsCore = Math.abs(screenX) < coreWidth / 2 + itemWidth * .55
+          && Math.abs(screenY) < coreHeight / 2 + itemWidth * .75;
+        const clearsCore = Math.abs(screenX) > coreWidth / 2 + itemWidth * .55 + 16
+          || Math.abs(screenY) > coreHeight / 2 + itemWidth * .75 + 16;
+        if (depth > .08 && overlapsCore) item.classList.add('is-core-occluder');
+        else if (depth < -.08 || clearsCore) item.classList.remove('is-core-occluder');
       });
     }
-    scatterAnimationFrame = requestAnimationFrame(renderScatterSphere);
+    if (scatterVisible) scatterAnimationFrame = requestAnimationFrame(renderScatterSphere);
   };
   const requestScatterSphere = () => {
     if (!scatterAnimationFrame && scatterVisible) scatterAnimationFrame = requestAnimationFrame(renderScatterSphere);
   };
+  if (project24Scatter) {
+    renderScatterSphere(performance.now(), true);
+    project24Scatter.classList.add('is-ready', 'is-initialized');
+  }
   if (project24Scatter) {
     const scatterObserver = new IntersectionObserver(([entry]) => {
       scatterVisible = entry.isIntersecting;
