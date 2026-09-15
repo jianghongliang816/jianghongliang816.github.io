@@ -108,6 +108,64 @@
   const autoplayMedia = [...document.querySelectorAll('video[autoplay]')];
   const motionToggle = document.querySelector('[data-motion-toggle]');
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const project24Story = document.querySelector('[data-project-24-story]');
+  const project24StoryFrames = [...(project24Story?.querySelectorAll('.project-24-story__frame') || [])];
+  let project24StoryFrame;
+
+  const clamp01 = (value) => Math.max(0, Math.min(1, value));
+  const smoothStep = (value) => {
+    const progress = clamp01(value);
+    return progress * progress * (3 - 2 * progress);
+  };
+  const syncProject24Story = () => {
+    project24StoryFrame = undefined;
+    if (!project24Story || !project24StoryFrames.length) return;
+
+    if (reducedMotion.matches) {
+      project24StoryFrames.forEach((frame) => {
+        frame.style.removeProperty('opacity');
+        frame.style.removeProperty('transform');
+        frame.style.removeProperty('z-index');
+      });
+      return;
+    }
+
+    const storyTop = window.scrollY + project24Story.getBoundingClientRect().top;
+    const travel = Math.max(1, project24Story.offsetHeight - window.innerHeight);
+    const progress = clamp01((window.scrollY - storyTop) / travel);
+    const position = progress * (project24StoryFrames.length - 1);
+
+    project24StoryFrames.forEach((frame, index) => {
+      const distance = index - position;
+      let opacity = 0;
+      let scale = .72;
+
+      if (distance <= 0 && distance >= -1) {
+        const exitProgress = -distance;
+        const depthEase = 1 - Math.pow(1 - exitProgress, 4);
+        scale = 1 - .48 * depthEase;
+        opacity = 1 - smoothStep((exitProgress - .06) / .76);
+      } else if (distance > 0 && distance <= 1) {
+        const enterProgress = 1 - distance;
+        const settleEase = 1 - Math.pow(1 - enterProgress, 5);
+        scale = .72 + .28 * settleEase;
+        opacity = smoothStep((enterProgress - .04) / .66);
+      }
+
+      frame.style.opacity = opacity.toFixed(4);
+      frame.style.transform = `scale(${scale.toFixed(4)})`;
+      frame.style.zIndex = String(index + 1);
+    });
+  };
+  const requestProject24Story = () => {
+    if (project24StoryFrame) return;
+    project24StoryFrame = requestAnimationFrame(syncProject24Story);
+  };
+  if (project24Story) {
+    window.addEventListener('scroll', requestProject24Story, { passive: true });
+    window.addEventListener('resize', requestProject24Story, { passive: true });
+    syncProject24Story();
+  }
   let motionPaused = reducedMotion.matches;
   const typeShowcase = document.querySelector('[data-type-showcase]');
   const typeShowcaseTrack = typeShowcase?.querySelector('[data-type-showcase-track]');
@@ -631,6 +689,7 @@
     renderTypeShowcaseState();
     syncTypeShowcaseMotionPreference();
     setScrollReveal(event.matches);
+    requestProject24Story();
   });
   window.addEventListener('resize', () => {
     window.clearTimeout(revealResizeTimer);
