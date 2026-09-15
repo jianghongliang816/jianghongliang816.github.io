@@ -279,6 +279,7 @@
         item.style.setProperty('--sphere-live-transform', `translate(-50%, -50%) translate3d(${screenX.toFixed(2)}px, ${screenY.toFixed(2)}px, 0) rotateY(${softYaw.toFixed(2)}deg) rotateX(${softPitch.toFixed(2)}deg) scale(${(perspectiveScale * breath).toFixed(4)})`);
         item.style.setProperty('--sphere-z', String(Math.round((depth + 1) * 100)));
         item.style.setProperty('--sphere-depth-opacity', String(.34 + (depth + 1) * .33));
+        item.classList.toggle('is-sphere-front', depth > 0);
       });
     }
     scatterAnimationFrame = requestAnimationFrame(renderScatterSphere);
