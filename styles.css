@@ -796,7 +796,7 @@ html.reveal-enabled .work-page [data-reveal-group^="work-stage-"].is-retreating:
 }
 .project-24-story {
   position: relative;
-  height: 520vh;
+  height: 625vh;
   margin-top: calc(var(--header-h) * -1);
   background: #fff;
 }
@@ -827,10 +827,16 @@ html.reveal-enabled .work-page [data-reveal-group^="work-stage-"].is-retreating:
   transform: scale(1);
 }
 .project-24-story__frame img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   max-width: none;
   object-fit: contain;
+}
+.project-24-story__frame:last-child img {
+  top: clamp(64px, 7vh, 86px);
+  height: calc(100% - clamp(88px, 10vh, 126px));
 }
 .detail-page--project-24 .project-media-stack--project-24-editorial {
   width: min(1200px, calc(100vw - 96px));
