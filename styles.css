@@ -214,6 +214,12 @@ img { display: block; max-width: 100%; }
   will-change: opacity, transform;
   pointer-events: none;
 }
+.brand-scatter-story__frame--gallery { z-index: 2; }
+.brand-scatter-story__frame--video {
+  z-index: 3;
+  inset: 0;
+  translate: none;
+}
 .brand-scatter-story__frame--intro { opacity: 1; transform: scale(1); }
 .brand-scatter-story__frame--intro > img {
   position: absolute;
