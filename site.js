@@ -139,6 +139,33 @@
       advanceWu();
     });
   }
+  const mottoHeart = document.querySelector('[data-motto-heart]');
+  if (mottoHeart) {
+    const image = mottoHeart.querySelector('.motto-heart__image');
+    const sources = Array.from({ length: 4 }, (_, index) => `media/home/heart-cycle/heart-${index + 1}.png`);
+    let sourceIndex = -1;
+    let switchTimer;
+    sources.forEach((source) => { const preload = new Image(); preload.src = source; });
+    const advanceHeart = () => {
+      sourceIndex = (sourceIndex + 1) % sources.length;
+      mottoHeart.classList.add('is-switching');
+      window.clearTimeout(switchTimer);
+      switchTimer = window.setTimeout(() => {
+        image.src = sources[sourceIndex];
+        mottoHeart.classList.add('is-image');
+        mottoHeart.classList.remove('is-switching');
+      }, 70);
+    };
+    mottoHeart.addEventListener('pointerenter', advanceHeart);
+    mottoHeart.addEventListener('click', () => {
+      if (window.matchMedia('(hover: none)').matches) advanceHeart();
+    });
+    mottoHeart.addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      event.preventDefault();
+      advanceHeart();
+    });
+  }
   const scatterVideoIndexes = new Set([12, 13, 29]);
   const scatterExtensions = ['png', 'png', 'png', 'jpg', 'jpg', 'png', 'png', 'jpg', 'jpg', 'jpg', 'jpg', 'mp4', 'mp4', 'jpg', 'jpg', 'jpg', 'jpg', 'jpg', 'jpg', 'jpg', 'jpg', 'jpg', 'jpg', 'png', 'png', 'png', 'jpg', 'png', 'mp4', 'jpg', 'png'];
   if (project24Scatter && !project24Scatter.children.length) {

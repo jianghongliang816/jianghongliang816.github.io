@@ -136,6 +136,31 @@ img { display: block; max-width: 100%; }
 }
 .motto-wu.is-switching img { opacity: .18; transform: scale(.84); }
 .motto-wu:focus-visible { outline: 1px solid currentColor; outline-offset: 5px; }
+.motto-heart {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 1.12em;
+  height: 1.18em;
+  cursor: pointer;
+  outline: none;
+}
+.motto-heart__text,
+.motto-heart__image {
+  grid-area: 1 / 1;
+  transition: opacity 130ms ease, transform 280ms cubic-bezier(.16, 1, .3, 1);
+}
+.motto-heart__image {
+  width: 112%;
+  height: 104%;
+  object-fit: contain;
+  opacity: 0;
+  transform: scale(.82);
+}
+.motto-heart.is-image .motto-heart__text { opacity: 0; transform: scale(.86); }
+.motto-heart.is-image .motto-heart__image { opacity: 1; transform: scale(1); }
+.motto-heart.is-switching .motto-heart__image { opacity: .16; transform: scale(.86); }
+.motto-heart:focus-visible { outline: 1px solid currentColor; outline-offset: 5px; }
 
 .type-showcase {
   --showcase-gap: clamp(18px, 1.5vw, 30px);
