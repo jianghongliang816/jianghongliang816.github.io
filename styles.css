@@ -93,10 +93,20 @@ img { display: block; max-width: 100%; }
   align-items: center;
   gap: 0;
   font-family: "PingFang SC", "Helvetica Neue", Arial, sans-serif;
-  font-size: clamp(32px, 2.8vw, 46px);
+  font-size: clamp(46px, 4.4vw, 74px);
   font-weight: 200;
   letter-spacing: normal;
   white-space: normal;
+}
+.motto-breath {
+  opacity: .2;
+  animation: motto-breathe 6.8s linear infinite;
+  will-change: opacity;
+}
+@keyframes motto-breathe {
+  0%, 12% { opacity: .2; animation-timing-function: cubic-bezier(.16, 1, .3, 1); }
+  40%, 58% { opacity: .9; animation-timing-function: cubic-bezier(.7, 0, .84, 0); }
+  86%, 100% { opacity: .2; }
 }
 .motto-wu {
   position: relative;
@@ -1435,7 +1445,7 @@ html.reveal-enabled .work-page [data-reveal-group^="work-stage-"].is-retreating:
   .work-intro { padding-top: 0; }
   .intro-layout { padding-top: 42px; padding-bottom: 62px; }
   .intro-layout h1 { font-size: clamp(21px, 5.2vw, 42px); }
-  .intro-layout .motto-title { width: max-content; font-size: clamp(30px, 7.8vw, 42px); }
+  .intro-layout .motto-title { width: max-content; font-size: clamp(40px, 10vw, 60px); }
   .type-showcase { padding-top: 16px; padding-bottom: 96px; }
   .type-showcase__item { height: 48vw; }
   .type-showcase__toggle { right: 20px; }
@@ -1604,7 +1614,7 @@ html.reveal-enabled .work-page [data-reveal-group^="work-stage-"].is-retreating:
   :root { --shell: calc(100vw - 28px); }
   .home-feature { width: calc(100vw - 28px); }
   .intro-layout h1 { font-size: clamp(17px, 5.3vw, 21px); }
-  .intro-layout .motto-title { width: max-content; font-size: clamp(28px, 8vw, 36px); }
+  .intro-layout .motto-title { width: max-content; font-size: clamp(36px, 10.5vw, 50px); }
   .filter { padding-left: 14px; font-size: 13px; }
   .project-hero-block { width: calc(100vw - 28px); }
   .detail-page--project-09 .project-media-stack { width: calc(100vw - 28px); }
@@ -1689,6 +1699,7 @@ html.reveal-enabled .work-page [data-reveal-group^="work-stage-"].is-retreating:
   html.reveal-enabled .project-card,
   html.reveal-enabled .scroll-reveal-item { opacity: 1; transform: none; }
   .client-marquee__track { animation: none; }
+  .motto-breath { animation: none; opacity: .9; }
   .client-marquee__strip[aria-hidden="true"] { display: none; }
   .type-showcase__viewport { overflow-x: auto; -webkit-mask-image: none; mask-image: none; }
   .type-showcase__track { transform: none !important; will-change: auto; }
