@@ -100,13 +100,23 @@ img { display: block; max-width: 100%; }
 }
 .motto-breath {
   opacity: .2;
-  animation: motto-breathe 6.8s linear infinite;
-  will-change: opacity;
+  transform-origin: center;
+  animation: motto-pulse 7.1s linear infinite;
+  will-change: opacity, transform;
 }
-@keyframes motto-breathe {
-  0%, 12% { opacity: .2; animation-timing-function: cubic-bezier(.16, 1, .3, 1); }
-  40%, 58% { opacity: .9; animation-timing-function: cubic-bezier(.7, 0, .84, 0); }
-  86%, 100% { opacity: .2; }
+.motto-breath:nth-child(1) { animation-duration: 7.1s; animation-delay: -1.2s; }
+.motto-breath:nth-child(3) { animation-duration: 8.35s; animation-delay: -4.4s; }
+.motto-breath:nth-child(4) { animation-duration: 6.45s; animation-delay: -2.7s; }
+@keyframes motto-pulse {
+  0%   { opacity: .20; transform: scale(.992); animation-timing-function: cubic-bezier(.22, .75, .32, 1); }
+  11%  { opacity: .40; transform: scale(1.008); animation-timing-function: cubic-bezier(.65, 0, .78, .34); }
+  23%  { opacity: .10; transform: scale(.982); animation-timing-function: cubic-bezier(.16, 1, .3, 1); }
+  39%  { opacity: .50; transform: scale(1.016); animation-timing-function: cubic-bezier(.55, .06, .68, .19); }
+  50%  { opacity: .40; transform: scale(1.004); animation-timing-function: cubic-bezier(.22, .72, .3, 1); }
+  64%  { opacity: .68; transform: scale(1.02); animation-timing-function: cubic-bezier(.7, 0, .84, 0); }
+  73%  { opacity: .18; transform: scale(.98); animation-timing-function: cubic-bezier(.16, 1, .3, 1); }
+  88%  { opacity: .56; transform: scale(1.012); animation-timing-function: cubic-bezier(.6, .04, .78, .28); }
+  100% { opacity: .20; transform: scale(.992); }
 }
 .motto-wu {
   position: relative;
