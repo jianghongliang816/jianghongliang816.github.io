@@ -87,43 +87,35 @@ img { display: block; max-width: 100%; }
 .intro-layout h1 span { color: inherit; font: inherit; letter-spacing: inherit; }
 .intro-layout .motto-title {
   margin-inline: auto;
-  width: min(620px, 76vw);
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  width: max-content;
+  max-width: 86vw;
+  display: inline-flex;
   align-items: center;
-  gap: clamp(2px, .35vw, 7px);
+  gap: 0;
   font-family: "PingFang SC", "Helvetica Neue", Arial, sans-serif;
-  font-size: clamp(46px, 5vw, 88px);
-  font-weight: 600;
-  letter-spacing: -.08em;
+  font-size: clamp(32px, 2.8vw, 46px);
+  font-weight: 200;
+  letter-spacing: normal;
   white-space: normal;
 }
-.motto-glyph {
+.motto-wu {
   position: relative;
   display: grid;
   place-items: center;
-  width: 100%;
+  width: 1.16em;
   height: 1.28em;
-  cursor: crosshair;
+  margin-inline: -.03em .01em;
+  cursor: pointer;
   outline: none;
 }
-.motto-glyph__text,
-.motto-glyph__ink {
-  grid-area: 1 / 1;
-  transition: opacity 180ms cubic-bezier(.22, 1, .36, 1), transform 360ms cubic-bezier(.16, 1, .3, 1);
-}
-.motto-glyph__text { line-height: 1; }
-.motto-glyph__ink {
-  width: 110%;
-  height: 112%;
+.motto-wu img {
+  width: 118%;
+  height: 118%;
   object-fit: contain;
-  opacity: 0;
-  transform: scale(.82) rotate(var(--ink-tilt, 0deg));
-  pointer-events: none;
+  transition: opacity 120ms ease, transform 260ms cubic-bezier(.16, 1, .3, 1);
 }
-.motto-glyph.is-ink .motto-glyph__text { opacity: 0; transform: scale(.86); }
-.motto-glyph.is-ink .motto-glyph__ink { opacity: 1; transform: scale(1) rotate(var(--ink-tilt, 0deg)); }
-.motto-glyph:is(:hover, :focus-visible) { z-index: 1; }
+.motto-wu.is-switching img { opacity: .18; transform: scale(.84); }
+.motto-wu:focus-visible { outline: 1px solid currentColor; outline-offset: 5px; }
 
 .type-showcase {
   --showcase-gap: clamp(18px, 1.5vw, 30px);
@@ -1443,7 +1435,7 @@ html.reveal-enabled .work-page [data-reveal-group^="work-stage-"].is-retreating:
   .work-intro { padding-top: 0; }
   .intro-layout { padding-top: 42px; padding-bottom: 62px; }
   .intro-layout h1 { font-size: clamp(21px, 5.2vw, 42px); }
-  .intro-layout .motto-title { width: min(480px, 82vw); font-size: clamp(38px, 10vw, 62px); }
+  .intro-layout .motto-title { width: max-content; font-size: clamp(30px, 7.8vw, 42px); }
   .type-showcase { padding-top: 16px; padding-bottom: 96px; }
   .type-showcase__item { height: 48vw; }
   .type-showcase__toggle { right: 20px; }
@@ -1612,7 +1604,7 @@ html.reveal-enabled .work-page [data-reveal-group^="work-stage-"].is-retreating:
   :root { --shell: calc(100vw - 28px); }
   .home-feature { width: calc(100vw - 28px); }
   .intro-layout h1 { font-size: clamp(17px, 5.3vw, 21px); }
-  .intro-layout .motto-title { width: 86vw; font-size: clamp(34px, 11vw, 48px); }
+  .intro-layout .motto-title { width: max-content; font-size: clamp(28px, 8vw, 36px); }
   .filter { padding-left: 14px; font-size: 13px; }
   .project-hero-block { width: calc(100vw - 28px); }
   .detail-page--project-09 .project-media-stack { width: calc(100vw - 28px); }

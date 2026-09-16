@@ -113,51 +113,30 @@
   const brandScatterStory = document.querySelector('[data-brand-scatter-story]');
   const brandScatterFrames = [...(brandScatterStory?.querySelectorAll('.brand-scatter-story__frame') || [])];
   const project24Scatter = document.querySelector('[data-project-24-scatter]');
-  const mottoTitle = document.querySelector('[data-motto-title]');
-  if (mottoTitle) {
-    const mottoGlyphs = [...mottoTitle.querySelectorAll('[data-motto-glyph]')];
-    const mottoSets = ['as', 'asd', 'e', 'r', 'q', 'rz'];
-    const chosenSets = Array(mottoGlyphs.length).fill(-1);
-    let lastMottoChange = 0;
-
-    const showMottoGlyph = (glyphIndex, setIndex) => {
-      const glyph = mottoGlyphs[glyphIndex];
-      const image = glyph?.querySelector('.motto-glyph__ink');
-      if (!glyph || !image) return;
-      chosenSets[glyphIndex] = setIndex;
-      image.src = `media/home/motto/set-${mottoSets[setIndex]}-${glyphIndex + 1}.png`;
-      glyph.style.setProperty('--ink-tilt', `${((setIndex * 7 + glyphIndex * 3) % 7) - 3}deg`);
-      glyph.classList.add('is-ink');
+  const mottoWu = document.querySelector('[data-motto-wu]');
+  if (mottoWu) {
+    const image = mottoWu.querySelector('img');
+    const sources = Array.from({ length: 6 }, (_, index) => `media/home/motto-cycle/wu-${index + 1}.png`);
+    let sourceIndex = 0;
+    let switchTimer;
+    sources.slice(1).forEach((source) => { const preload = new Image(); preload.src = source; });
+    const advanceWu = () => {
+      sourceIndex = (sourceIndex + 1) % sources.length;
+      mottoWu.classList.add('is-switching');
+      window.clearTimeout(switchTimer);
+      switchTimer = window.setTimeout(() => {
+        image.src = sources[sourceIndex];
+        mottoWu.classList.remove('is-switching');
+      }, 70);
     };
-
-    const remixMotto = (glyphIndex) => {
-      // Occasionally restore all four characters from one original handwritten
-      // line; otherwise only the character under the pointer is remixed.
-      if (Math.random() < .22) {
-        const setIndex = Math.floor(Math.random() * mottoSets.length);
-        mottoGlyphs.forEach((_, index) => showMottoGlyph(index, setIndex));
-        return;
-      }
-      let setIndex = Math.floor(Math.random() * mottoSets.length);
-      if (mottoSets.length > 1 && setIndex === chosenSets[glyphIndex]) {
-        setIndex = (setIndex + 1 + Math.floor(Math.random() * (mottoSets.length - 1))) % mottoSets.length;
-      }
-      showMottoGlyph(glyphIndex, setIndex);
-    };
-
-    mottoGlyphs.forEach((glyph, glyphIndex) => {
-      glyph.addEventListener('pointerenter', () => {
-        lastMottoChange = performance.now();
-        remixMotto(glyphIndex);
-      });
-      glyph.addEventListener('pointermove', () => {
-        const now = performance.now();
-        if (now - lastMottoChange < 180) return;
-        lastMottoChange = now;
-        remixMotto(glyphIndex);
-      });
-      glyph.addEventListener('focus', () => remixMotto(glyphIndex));
-      glyph.addEventListener('click', () => remixMotto(glyphIndex));
+    mottoWu.addEventListener('pointerenter', advanceWu);
+    mottoWu.addEventListener('click', () => {
+      if (window.matchMedia('(hover: none)').matches) advanceWu();
+    });
+    mottoWu.addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      event.preventDefault();
+      advanceWu();
     });
   }
   const scatterVideoIndexes = new Set([12, 13, 29]);
